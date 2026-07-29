@@ -33,12 +33,10 @@ function initSplashScreen() {
     const progressBar = document.getElementById('splash-progress-bar');
     if (!splash) return;
 
-    // Trigger progress bar animation
     setTimeout(() => {
         if (progressBar) progressBar.style.width = '100%';
     }, 150);
 
-    // Dismiss splash overlay
     const dismissSplash = () => {
         splash.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
@@ -92,14 +90,12 @@ function showToast(message) {
 }
 
 // ==========================================
-// NIMIQ HUB WALLET AUTHENTICATION
+// WALLET PROVIDER CONNECTORS
 // ==========================================
 async function connectNimiqWallet() {
     if (hubApi) {
         try {
-            const res = await hubApi.chooseAddress({
-                appName: 'KorriPay'
-            });
+            const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
             if (res && res.address) {
                 setAddress(res.address);
                 showToast(`Connected Nimiq wallet: ${formatNimiqAddress(res.address)}`);
@@ -112,6 +108,70 @@ async function connectNimiqWallet() {
         }
     } else {
         openModal('tab-content-profile');
+    }
+}
+
+async function connectMetaMask() {
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            if (accounts && accounts[0]) {
+                showToast(`MetaMask connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+                // Prompt user to associate or enter their Nimiq address
+                const addr = prompt('MetaMask connected! Enter your Nimiq payout address:');
+                if (addr) setAddress(addr);
+            }
+        } catch (err) {
+            showToast('MetaMask connection rejected');
+        }
+    } else {
+        showToast('MetaMask extension not found in browser');
+    }
+}
+
+async function connectPhantom() {
+    if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+        try {
+            const res = await window.solana.connect();
+            if (res && res.publicKey) {
+                const pubKey = res.publicKey.toString();
+                showToast(`Phantom connected: ${pubKey.slice(0, 6)}...${pubKey.slice(-4)}`);
+                const addr = prompt('Phantom connected! Enter your Nimiq payout address:');
+                if (addr) setAddress(addr);
+            }
+        } catch (err) {
+            showToast('Phantom connection rejected');
+        }
+    } else {
+        showToast('Phantom wallet extension not found in browser');
+    }
+}
+
+function setupWalletConnectModal() {
+    const modal = document.getElementById('modal-wallet-connect');
+    const btnClose = document.getElementById('btn-close-wallet-modal');
+    const btnConfirm = document.getElementById('btn-confirm-wallet-connect');
+
+    if (btnClose) {
+        btnClose.addEventListener('click', () => closeModal('modal-wallet-connect'));
+    }
+
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', async () => {
+            const selected = document.querySelector('input[name="wallet-provider"]:checked')?.value;
+            closeModal('modal-wallet-connect');
+
+            if (selected === 'nimiq') {
+                await connectNimiqWallet();
+            } else if (selected === 'metamask') {
+                await connectMetaMask();
+            } else if (selected === 'phantom') {
+                await connectPhantom();
+            } else if (selected === 'manual') {
+                const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
+                if (addr) setAddress(addr);
+            }
+        });
     }
 }
 
@@ -710,12 +770,10 @@ function closeModal(id) {
 }
 
 function setupModalTriggers() {
-    document.getElementById('btn-connect-hub')?.addEventListener('click', connectNimiqWallet);
-    document.getElementById('btn-banner-connect')?.addEventListener('click', connectNimiqWallet);
-    document.getElementById('btn-banner-manual')?.addEventListener('click', () => {
-        const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
-        if (addr) setAddress(addr);
-    });
+    const openConnectModal = () => openModal('modal-wallet-connect');
+
+    document.getElementById('btn-connect-hub')?.addEventListener('click', openConnectModal);
+    document.getElementById('btn-banner-connect')?.addEventListener('click', openConnectModal);
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
@@ -770,6 +828,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initShaderCanvas();
     setupNavigation();
     setupModalTriggers();
+    setupWalletConnectModal();
     setupSendModal();
     setupInvoiceBuilder();
     
