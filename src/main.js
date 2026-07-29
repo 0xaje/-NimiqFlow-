@@ -12,128 +12,92 @@ const TRANSLATIONS = {
     en: {
         mini_app_subtitle: 'Smart Crypto Payments, Simplified.',
         splash_initializing: 'Initializing Native Mini App SDK...',
-        device_verified: 'Device Verified',
+        device_verified: 'Verified',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Connect with Nimiq Pay',
-        banner_desc: 'The smartest way to send, receive, and request crypto payments. Connect via Native Mini App SDK to start flowing.',
         total_balance: 'Total Balance (USD)',
         not_connected: 'Not Connected',
         nim_balance: 'Nimiq Crypto Balance',
         send: 'Send',
         receive: 'Receive',
         request_pay: 'Request',
-        request_pay_title: 'Request Payment with Memo & Link',
-        request_pay_desc: 'Create payment requests with custom amounts and memos. Generates shareable checkout links and QR codes.',
-        create_request_btn: 'Create Payment Request',
         invoice: 'Invoice',
-        qr_pay: 'QR Pay',
         sign_msg: 'Sign Msg',
-        verify_identity: 'Verify Identity (Sign Message)',
-        sign_msg_desc: 'Cryptographically sign authentication messages using your Nimiq Pay key pair to prove wallet ownership.',
-        sign_message_btn: 'Sign Identity Message',
         smart_invoice: 'Smart Invoice Generator',
-        invoice_card_desc: 'Generate itemized invoices with live USD/NIM calculations, scan-to-pay QR requests, and PDF export.',
-        create_invoice: 'Create Smart Invoice',
         recent_activity: 'Recent Activity',
         view_all: 'View All',
         connect_prompt: 'Connect with Nimiq Pay to load mainnet transactions.',
-        history: 'Transaction History',
+        history: 'History',
         all: 'All',
         sent: 'Sent',
         received: 'Received',
+        analytics: 'Analytics',
         monthly_insight: 'Monthly Insight',
         total_volume: 'Total Transaction Volume',
-        net_worth: 'Net Worth (USD)',
-        holdings: 'Holdings (NIM)',
+        settings: 'Settings',
         language_label: 'App Language',
         disconnect_session: 'Disconnect Nimiq Flow Session',
-        home: 'Home',
-        pay: 'Pay',
-        profile: 'Profile'
+        home: 'Home'
     },
     de: {
         mini_app_subtitle: 'Intelligente Krypto-Zahlungen, Vereinfacht.',
         splash_initializing: 'Native Mini App SDK wird initialisiert...',
-        device_verified: 'Gerät Bestätigt',
+        device_verified: 'Bestätigt',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Mit Nimiq Pay verbinden',
-        banner_desc: 'Der intelligenteste Weg, Krypto-Zahlungen zu senden, zu empfangen und anzufordern.',
         total_balance: 'Gesamtguthaben (USD)',
         not_connected: 'Nicht verbunden',
         nim_balance: 'Nimiq Krypto-Guthaben',
         send: 'Senden',
         receive: 'Empfangen',
         request_pay: 'Anfordern',
-        request_pay_title: 'Zahlung mit Verwendungszweck anfordern',
-        request_pay_desc: 'Erstellen Sie Zahlungsanforderungen mit Betrag und Betreff. Generiert teilbare Links und QR-Codes.',
-        create_request_btn: 'Zahlungsanforderung erstellen',
         invoice: 'Rechnung',
-        qr_pay: 'QR Bezahlen',
         sign_msg: 'Signieren',
-        verify_identity: 'Identität bestätigen (Nachricht signieren)',
-        sign_msg_desc: 'Signieren Sie eine Nachricht mit Ihrem Nimiq Pay Schlüsselpaar zur Eigentumsbestätigung.',
-        sign_message_btn: 'Identitätsnachricht signieren',
         smart_invoice: 'Intelligenter Rechnungsgenerator',
-        invoice_card_desc: 'Erstellen Sie detaillierte Rechnungen mit Live-USD/NIM-Berechnungen und QR-Code-Zahlung.',
-        create_invoice: 'Rechnung erstellen',
         recent_activity: 'Letzte Aktivitäten',
         view_all: 'Alle anzeigen',
         connect_prompt: 'Mit Nimiq Pay verbinden, um Transaktionen zu laden.',
-        history: 'Transaktionsverlauf',
+        history: 'Verlauf',
         all: 'Alle',
         sent: 'Gesendet',
         received: 'Empfangen',
+        analytics: 'Analysen',
         monthly_insight: 'Monatlicher Einblick',
         total_volume: 'Gesamtes Transaktionsvolumen',
-        net_worth: 'Gesamtwert (USD)',
-        holdings: 'Bestände (NIM)',
+        settings: 'Einstellungen',
         language_label: 'App-Sprache',
         disconnect_session: 'Nimiq Flow Sitzung trennen',
-        home: 'Start',
-        pay: 'Zahlen',
-        profile: 'Profil'
+        home: 'Start'
     },
     es: {
         mini_app_subtitle: 'Pagos Cripto Inteligentes, Simplificados.',
         splash_initializing: 'Inicializando Native Mini App SDK...',
-        device_verified: 'Dispositivo Verificado',
+        device_verified: 'Verificado',
         mainnet_live: 'Nimiq Mainnet en Vivo',
         connect: 'Conectar con Nimiq Pay',
-        banner_desc: 'La forma más inteligente de enviar, recibir y solicitar pagos en criptomonedas.',
         total_balance: 'Saldo Total (USD)',
         not_connected: 'No conectado',
         nim_balance: 'Saldo Nimiq Cripto',
         send: 'Enviar',
         receive: 'Recibir',
         request_pay: 'Solicitar',
-        request_pay_title: 'Solicitar Pago con Nota y Enlace',
-        request_pay_desc: 'Cree solicitudes de pago con monto y concepto. Genera enlaces para compartir y códigos QR.',
-        create_request_btn: 'Crear Solicitud de Pago',
         invoice: 'Factura',
-        qr_pay: 'Pago QR',
         sign_msg: 'Firmar',
-        verify_identity: 'Verificar Identidad (Firmar Mensaje)',
-        sign_msg_desc: 'Firme mensajes con su par de claves de Nimiq Pay para demostrar la propiedad del monedero.',
-        sign_message_btn: 'Firmar Mensaje de Identidad',
         smart_invoice: 'Generador de Facturas Inteligente',
-        invoice_card_desc: 'Genere facturas detalladas con cálculos USD/NIM en vivo y código QR de pago.',
-        create_invoice: 'Crear Factura Inteligente',
         recent_activity: 'Actividad Reciente',
         view_all: 'Ver Todo',
         connect_prompt: 'Conéctese con Nimiq Pay para cargar transacciones.',
-        history: 'Historial de Transacciones',
+        history: 'Historial',
         all: 'Todo',
         sent: 'Enviado',
         received: 'Recibido',
+        analytics: 'Analíticas',
         monthly_insight: 'Resumen Mensual',
         total_volume: 'Volumen Total de Transacciones',
-        net_worth: 'Patrimonio (USD)',
-        holdings: 'Criptoactivos (NIM)',
+        settings: 'Ajustes',
         language_label: 'Idioma de la App',
         disconnect_session: 'Desconectar Sesión Nimiq Flow',
-        home: 'Inicio',
-        pay: 'Pagar',
-        profile: 'Perfil'
+        home: 'Inicio'
     }
 };
 
@@ -145,7 +109,7 @@ let state = {
     usdRate: 0.00047,
     usdBalance: 0,
     transactions: [],
-    historyFilter: 'all', // 'all' | 'sent' | 'received'
+    historyFilter: 'all',
     isLoading: false,
     activeTab: 'home',
     sendAmountStr: '0',
@@ -162,7 +126,7 @@ try {
 }
 
 // ==========================================
-// NATIVE MINI APP PROVIDER (init & listAccounts & signMessage)
+// NATIVE MINI APP PROVIDER
 // ==========================================
 async function getNativeNimiqProvider() {
     if (window.nimiqPay && typeof window.nimiqPay.init === 'function') {
@@ -646,13 +610,9 @@ function updateBalanceDisplay() {
     const usdElMain = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
     const sendModalBalance = document.getElementById('send-modal-balance');
-    const connectBanner = document.getElementById('wallet-connect-banner');
     const btnConnectLabel = document.getElementById('btn-connect-label');
 
-    // Profile elements
     const profAddr = document.getElementById('profile-address-display');
-    const profNet = document.getElementById('profile-net-worth');
-    const profHoldings = document.getElementById('profile-nim-holdings');
 
     if (!state.address) {
         if (addrEl) {
@@ -667,16 +627,12 @@ function updateBalanceDisplay() {
         if (profAddr) {
             profAddr.textContent = TRANSLATIONS[state.currentLang]?.not_connected || 'Not Connected';
         }
-        if (profNet) profNet.textContent = '$0.00';
-        if (profHoldings) profHoldings.textContent = '0.00 NIM';
-        if (connectBanner) connectBanner.classList.remove('hidden');
         if (btnConnectLabel) {
             btnConnectLabel.textContent = TRANSLATIONS[state.currentLang]?.connect || 'Connect with Nimiq Pay';
         }
         return;
     }
 
-    if (connectBanner) connectBanner.classList.add('hidden');
     if (btnConnectLabel) btnConnectLabel.textContent = state.address.slice(0, 9) + '...';
 
     const formattedAddr = formatNimiqAddress(state.address);
@@ -686,10 +642,7 @@ function updateBalanceDisplay() {
     if (usdElMain) usdElMain.textContent = formatUSD(state.usdBalance);
     if (receiveAddrEl) receiveAddrEl.textContent = formattedAddr;
     if (sendModalBalance) sendModalBalance.textContent = `${formatNIM(state.nimBalance)} NIM`;
-
     if (profAddr) profAddr.textContent = state.address.slice(0, 9) + '...' + state.address.slice(-6);
-    if (profNet) profNet.textContent = formatUSD(state.usdBalance);
-    if (profHoldings) profHoldings.textContent = `${formatNIM(state.nimBalance)} NIM`;
 
     renderReceiveQRCode();
 }
@@ -1093,28 +1046,18 @@ function setupNavigation() {
     const tabs = {
         'home': document.getElementById('tab-content-home'),
         'history': document.getElementById('tab-content-history'),
-        'profile': document.getElementById('tab-content-profile')
+        'analytics': document.getElementById('tab-content-analytics'),
+        'settings': document.getElementById('tab-content-settings')
     };
 
     const navBtnsMobile = {
         'home': document.getElementById('nav-btn-home'),
-        'pay': document.getElementById('nav-btn-pay'),
-        'invoice': document.getElementById('nav-btn-invoice'),
         'history': document.getElementById('nav-btn-history'),
-        'profile': document.getElementById('nav-btn-profile')
+        'analytics': document.getElementById('nav-btn-analytics'),
+        'settings': document.getElementById('nav-btn-settings')
     };
 
     function switchTab(target) {
-        if (target === 'pay') {
-            openModal('modal-send');
-            return;
-        }
-
-        if (target === 'invoice') {
-            openModal('modal-invoice-builder');
-            return;
-        }
-
         state.activeTab = target;
 
         Object.keys(tabs).forEach(key => {
@@ -1169,19 +1112,14 @@ function closeModal(id) {
 
 function setupModalTriggers() {
     document.getElementById('btn-connect-hub')?.addEventListener('click', connectWithNimiqPay);
-    document.getElementById('btn-banner-connect')?.addEventListener('click', connectWithNimiqPay);
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
     document.getElementById('btn-open-request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
-    document.getElementById('btn-trigger-request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
 
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
-    document.getElementById('btn-open-invoice-builder-2')?.addEventListener('click', () => openModal('modal-invoice-builder'));
 
     document.getElementById('btn-open-sign-modal')?.addEventListener('click', () => openModal('modal-sign-message'));
-    document.getElementById('btn-trigger-sign-identity')?.addEventListener('click', () => openModal('modal-sign-message'));
-    document.getElementById('btn-profile-sign-msg')?.addEventListener('click', () => openModal('modal-sign-message'));
 
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
@@ -1200,7 +1138,6 @@ function setupModalTriggers() {
 
     document.getElementById('btn-copy-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
-    document.getElementById('btn-profile-copy-addr')?.addEventListener('click', doCopy);
 
     const btnCopyDeviceId = document.getElementById('btn-copy-device-id');
     if (btnCopyDeviceId) {
@@ -1221,13 +1158,8 @@ function setupModalTriggers() {
     };
 
     document.getElementById('btn-explorer-link')?.addEventListener('click', openExplorer);
-    document.getElementById('btn-profile-support')?.addEventListener('click', openExplorer);
 
     document.getElementById('btn-profile-logout')?.addEventListener('click', disconnectWallet);
-
-    document.getElementById('btn-notifications')?.addEventListener('click', () => {
-        showToast('Connected to Nimiq Mainnet via RPC node.');
-    });
 }
 
 // ==========================================

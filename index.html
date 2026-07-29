@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-    <title>Nimiq Flow - Smart Crypto Payments, Simplified</title>
+    <title>Nimiq Flow - Smart Crypto Payments</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -34,12 +34,12 @@
 <body class="bg-[#0d0f0f] text-[#e2e2e2] min-h-screen pb-24">
     <!-- SPLASH SCREEN OVERLAY -->
     <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0d0f0f] transition-opacity duration-500">
-        <div class="relative z-10 flex flex-col items-center space-y-5 px-4 text-center">
-            <div class="w-24 h-24 rounded-3xl bg-[#f6a623] flex items-center justify-center shadow-[0_10px_30px_rgba(246,166,35,0.35)]">
-                <span class="text-[#462b00] font-extrabold text-5xl tracking-tight leading-none select-none">N</span>
+        <div class="relative z-10 flex flex-col items-center space-y-4 px-4 text-center">
+            <div class="w-20 h-20 rounded-3xl bg-[#f6a623] flex items-center justify-center shadow-[0_10px_30px_rgba(246,166,35,0.35)]">
+                <span class="text-[#462b00] font-extrabold text-4xl tracking-tight leading-none select-none">N</span>
             </div>
-            <div class="flex flex-col items-center space-y-1">
-                <h1 class="font-extrabold text-3xl text-[#ffc982] tracking-tight">Nimiq Flow</h1>
+            <div class="flex flex-col items-center space-y-0.5">
+                <h1 class="font-extrabold text-2xl text-[#ffc982] tracking-tight">Nimiq Flow</h1>
                 <p class="text-xs text-[#d7c3ae] font-medium" data-i18n="mini_app_subtitle">Smart Crypto Payments, Simplified.</p>
             </div>
         </div>
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <!-- TOP MINI APP HEADER -->
+    <!-- TOP APP HEADER -->
     <header class="fixed top-0 left-0 w-full z-40 bg-[#0d0f0f]/90 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-4 py-3">
         <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl bg-[#f6a623] flex items-center justify-center font-extrabold text-[#462b00] text-lg shadow-md">
@@ -62,12 +62,8 @@
                     <span class="text-lg font-bold text-[#ffc982] tracking-tight leading-none">Nimiq Flow</span>
                     <div class="flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[10px] text-emerald-400 font-semibold">
                         <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified_user</span>
-                        <span id="header-device-badge" data-i18n="device_verified">Device Verified</span>
+                        <span id="header-device-badge" data-i18n="device_verified">Verified</span>
                     </div>
-                </div>
-                <div class="flex items-center gap-1 text-[10px] text-emerald-400 font-medium mt-0.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span data-i18n="mainnet_live">Nimiq Mainnet Live</span>
                 </div>
             </div>
         </div>
@@ -77,33 +73,16 @@
                 <span class="material-symbols-outlined text-sm">link</span>
                 <span id="btn-connect-label" data-i18n="connect">Connect with Nimiq Pay</span>
             </button>
-            <button id="btn-notifications" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#181a1a] border border-white/10 hover:opacity-80 transition-opacity active:scale-95">
-                <span class="material-symbols-outlined text-[#ffc982] text-lg">notifications</span>
-            </button>
         </div>
     </header>
 
-    <!-- MAIN MINI APP CONTAINER -->
+    <!-- MAIN APP CONTAINER -->
     <main class="pt-20 px-4 max-w-lg mx-auto flex flex-col gap-5">
         
-        <!-- PROMPT BANNER FOR UNCONNECTED WALLET -->
-        <div id="wallet-connect-banner" class="glass-card rounded-2xl p-5 text-center flex flex-col items-center gap-2.5 animate-fade-in-up border border-[#f6a623]/30">
-            <div class="w-12 h-12 rounded-xl bg-[#f6a623]/20 border border-[#f6a623]/40 flex items-center justify-center text-[#ffc982]">
-                <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
-            </div>
-            <h2 class="text-base font-bold text-white tracking-tight" data-i18n="connect">Connect with Nimiq Pay</h2>
-            <p class="text-xs text-[#d7c3ae] max-w-xs leading-relaxed" data-i18n="banner_desc">
-                The smartest way to send, receive, and request crypto payments. Connect via Native Mini App SDK to start flowing.
-            </p>
-            <button id="btn-banner-connect" class="w-full max-w-xs bg-[#f6a623] text-[#462b00] font-bold py-2.5 rounded-xl text-xs hover:opacity-90 transition-all shadow-md active:scale-95 mt-1" data-i18n="connect">
-                Connect with Nimiq Pay
-            </button>
-        </div>
-
         <!-- HOME TAB CONTENT -->
         <div id="tab-content-home" class="flex flex-col gap-5">
             
-            <!-- HERO BALANCE CARD -->
+            <!-- BALANCE CARD -->
             <section id="hero-balance-card" class="glass-card-hero relative w-full rounded-3xl p-6 text-white flex flex-col justify-between transition-all duration-300">
                 <div class="flex flex-col gap-1">
                     <div class="flex justify-between items-center">
@@ -139,56 +118,46 @@
                 </div>
             </section>
 
-            <!-- QUICK ACTION GRID (4 ICON CARDS) -->
-            <section class="grid grid-cols-4 gap-2.5 animate-fade-in-up delay-1">
+            <!-- ACTION GRID: SEND, RECEIVE, REQUEST, INVOICE, SIGN MSG -->
+            <section class="grid grid-cols-5 gap-2 animate-fade-in-up delay-1">
                 <button id="btn-open-send" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-14 h-14 rounded-2xl bg-[#f6a623]/15 border border-[#f6a623]/30 flex items-center justify-center text-[#ffc982] group-hover:bg-[#f6a623] group-hover:text-[#462b00] transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-[26px]">send</span>
+                    <div class="w-12 h-12 rounded-2xl bg-[#f6a623]/15 border border-[#f6a623]/30 flex items-center justify-center text-[#ffc982] group-hover:bg-[#f6a623] group-hover:text-[#462b00] transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-2xl">send</span>
                     </div>
-                    <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="send">Send</span>
+                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="send">Send</span>
+                </button>
+
+                <button id="btn-open-receive" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
+                    <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-2xl">call_received</span>
+                    </div>
+                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="receive">Receive</span>
                 </button>
 
                 <button id="btn-open-request-pay" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-14 h-14 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-[26px]">request_quote</span>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-300 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-2xl">request_quote</span>
                     </div>
-                    <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="request_pay">Request</span>
+                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="request_pay">Request</span>
                 </button>
 
                 <button id="btn-open-invoice-builder" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-[26px]">receipt_long</span>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-2xl">receipt_long</span>
                     </div>
-                    <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="invoice">Invoice</span>
+                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="invoice">Invoice</span>
                 </button>
 
                 <button id="btn-open-sign-modal" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-[26px]">draw</span>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-2xl">draw</span>
                     </div>
-                    <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="sign_msg">Sign Msg</span>
+                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="sign_msg">Sign Msg</span>
                 </button>
             </section>
 
-            <!-- REQUEST PAYMENT FEATURE BANNER -->
-            <section class="bg-[#181a1a] rounded-2xl p-5 border border-sky-500/30 relative overflow-hidden animate-fade-in-up delay-2 shadow-xl flex flex-col gap-2.5">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sky-400">request_quote</span>
-                        <h3 class="text-base font-bold text-white" data-i18n="request_pay_title">Request Payment with Memo & Link</h3>
-                    </div>
-                    <span class="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-2 py-0.5 rounded-full uppercase">SHAREABLE</span>
-                </div>
-                <p class="text-[#d7c3ae] text-xs leading-relaxed" data-i18n="request_pay_desc">
-                    Create payment requests with custom amounts and memos. Generates shareable checkout links and QR codes.
-                </p>
-                <button id="btn-trigger-request-pay" class="w-fit px-4 py-2 bg-sky-500/20 border border-sky-500/40 rounded-full text-sky-300 font-semibold text-xs hover:bg-sky-500 hover:text-white transition-all flex items-center gap-1.5 active:scale-95">
-                    <span class="material-symbols-outlined text-sm">link</span> <span data-i18n="create_request_btn">Create Payment Request</span>
-                </button>
-            </section>
-
-            <!-- RECENT ACTIVITY SECTION -->
-            <section class="flex flex-col gap-3 animate-fade-in-up delay-3">
+            <!-- RECENT ACTIVITY LIST -->
+            <section class="flex flex-col gap-3 animate-fade-in-up delay-2">
                 <div class="flex justify-between items-center px-1">
                     <h3 class="text-base font-bold text-white flex items-center gap-1.5">
                         <span data-i18n="recent_activity">Recent Activity</span>
@@ -225,9 +194,13 @@
             <!-- Transactions Grouped List -->
             <div id="full-history-list" class="flex flex-col gap-2.5">
             </div>
+        </div>
 
-            <!-- Monthly Insight Summary Card -->
-            <section class="glass-card p-5 rounded-2xl border border-white/15 relative overflow-hidden shadow-xl mt-1">
+        <!-- ANALYTICS TAB CONTENT -->
+        <div id="tab-content-analytics" class="hidden flex-col gap-5 animate-fade-in-up">
+            <h2 class="text-xl font-bold text-[#ffc982]" data-i18n="analytics">Analytics & Insights</h2>
+
+            <section class="glass-card p-5 rounded-2xl border border-white/15 relative overflow-hidden shadow-xl">
                 <div class="relative z-10 flex flex-col gap-3">
                     <h3 class="text-sm font-bold text-[#ffc982] flex items-center gap-2">
                         <span class="material-symbols-outlined text-lg">insights</span> <span data-i18n="monthly_insight">Monthly Insight</span>
@@ -250,32 +223,18 @@
             </section>
         </div>
 
-        <!-- PROFILE / SETTINGS TAB CONTENT -->
-        <div id="tab-content-profile" class="hidden flex-col gap-5 animate-fade-in-up">
-            <!-- Profile Header Card -->
-            <section class="glass-card rounded-2xl p-6 border border-white/15 flex flex-col items-center text-center shadow-xl">
-                <div class="w-20 h-20 rounded-full border-2 border-[#f6a623] p-1 bg-[#181a1a] mb-3 flex items-center justify-center shadow-md">
-                    <div class="w-full h-full rounded-full bg-[#f6a623]/20 flex items-center justify-center text-[#ffc982]">
-                        <span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
-                    </div>
+        <!-- SETTINGS TAB CONTENT -->
+        <div id="tab-content-settings" class="hidden flex-col gap-5 animate-fade-in-up">
+            <h2 class="text-xl font-bold text-[#ffc982]" data-i18n="settings">Settings</h2>
+
+            <!-- User Info Card -->
+            <section class="glass-card rounded-2xl p-5 border border-white/15 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-[#f6a623]/20 text-[#ffc982] flex items-center justify-center border border-[#f6a623]/40">
+                    <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
                 </div>
-                <h2 class="text-lg font-bold text-white tracking-tight">Nimiq Flow User</h2>
-                <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full border border-white/10 mt-1 mb-4">
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold text-white">Nimiq Flow Account</span>
                     <span id="profile-address-display" class="text-xs font-mono text-[#ffc982]">Not Connected</span>
-                    <button id="btn-profile-copy-addr" class="text-white/60 hover:text-[#ffc982] transition-colors">
-                        <span class="material-symbols-outlined text-sm">content_copy</span>
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3 w-full pt-3 border-t border-white/10">
-                    <div class="text-center">
-                        <p class="text-[11px] text-[#d7c3ae] uppercase font-semibold" data-i18n="net_worth">Net Worth (USD)</p>
-                        <p id="profile-net-worth" class="text-lg font-bold text-white font-mono mt-0.5">$0.00</p>
-                    </div>
-                    <div class="text-center border-l border-white/10">
-                        <p class="text-[11px] text-[#d7c3ae] uppercase font-semibold" data-i18n="holdings">Holdings (NIM)</p>
-                        <p id="profile-nim-holdings" class="text-lg font-bold text-[#ffc982] font-mono mt-0.5">0.00 NIM</p>
-                    </div>
                 </div>
             </section>
 
@@ -319,84 +278,36 @@
                 </button>
             </section>
 
-            <!-- Sign Message & Verify Identity Quick Button -->
-            <button id="btn-profile-sign-msg" class="w-full glass-card p-4 rounded-2xl flex items-center justify-between hover:bg-emerald-500/10 transition-all border border-emerald-500/30">
+            <!-- Network Settings -->
+            <section class="glass-card rounded-2xl overflow-hidden border border-white/10 flex flex-col divide-y divide-white/10">
+                <div class="p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                            <span class="material-symbols-outlined text-lg">security</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-white">Mainnet RPC Node</p>
+                            <p class="text-[11px] font-mono text-emerald-400">https://rpc.nimiqwatch.com</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full">ACTIVE</span>
+                </div>
+            </section>
+
+            <!-- Disconnect Button -->
+            <button id="btn-profile-logout" class="w-full glass-card p-4 rounded-2xl flex items-center justify-between hover:bg-red-500/20 transition-all border border-red-500/30 text-red-400">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                        <span class="material-symbols-outlined text-lg">draw</span>
+                    <div class="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-lg">logout</span>
                     </div>
-                    <span class="text-xs font-bold text-white" data-i18n="verify_identity">Verify Identity (Sign Message)</span>
+                    <span class="text-xs font-bold" data-i18n="disconnect_session">Disconnect Nimiq Flow Session</span>
                 </div>
-                <span class="material-symbols-outlined text-[#d7c3ae] text-sm">arrow_forward</span>
             </button>
-
-            <!-- Preferences Settings List -->
-            <section class="flex flex-col gap-2.5">
-                <h3 class="text-xs font-bold text-[#d7c3ae] uppercase tracking-wider px-1">Network & SDK Protocol</h3>
-                
-                <div class="glass-card rounded-2xl overflow-hidden border border-white/10 flex flex-col divide-y divide-white/10">
-                    <!-- Network Node -->
-                    <div class="p-4 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                                <span class="material-symbols-outlined text-lg">security</span>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-white">Mainnet RPC Node</p>
-                                <p class="text-[11px] font-mono text-emerald-400">https://rpc.nimiqwatch.com</p>
-                            </div>
-                        </div>
-                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full">ACTIVE</span>
-                    </div>
-
-                    <!-- Mini App SDK -->
-                    <div class="p-4 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-[#f6a623]/20 text-[#ffc982] flex items-center justify-center border border-[#f6a623]/30">
-                                <span class="material-symbols-outlined text-lg">integration_instructions</span>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-white">Mini App SDK Protocol</p>
-                                <p class="text-[11px] text-[#d7c3ae]">Native Nimiq Pay Integration</p>
-                            </div>
-                        </div>
-                        <span class="text-[10px] bg-[#f6a623]/20 text-[#ffc982] font-semibold px-2.5 py-0.5 rounded-full">SDK CONNECTED</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Support & Disconnect -->
-            <section class="flex flex-col gap-2.5">
-                <button id="btn-profile-support" class="w-full glass-card p-4 rounded-2xl flex items-center justify-between hover:bg-white/5 transition-all border border-white/10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
-                            <span class="material-symbols-outlined text-lg">help</span>
-                        </div>
-                        <span class="text-xs font-bold text-white">Nimiq Block Explorer</span>
-                    </div>
-                    <span class="material-symbols-outlined text-[#d7c3ae] text-sm">open_in_new</span>
-                </button>
-
-                <button id="btn-profile-logout" class="w-full glass-card p-4 rounded-2xl flex items-center justify-between hover:bg-red-500/20 transition-all border border-red-500/30 text-red-400">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-lg">logout</span>
-                        </div>
-                        <span class="text-xs font-bold" data-i18n="disconnect_session">Disconnect Nimiq Flow Session</span>
-                    </div>
-                </button>
-            </section>
-
-            <!-- Version Footer -->
-            <div class="text-center py-2">
-                <p class="text-xs font-mono text-[#d7c3ae]">Nimiq Flow Mini App v2.4.0</p>
-                <p class="text-[10px] text-white/50 mt-0.5">Powered by Nimiq Pay Mini App SDK</p>
-            </div>
         </div>
 
     </main>
 
-    <!-- MODAL: REQUEST PAYMENT (SHAREABLE LINK, QR & MEMO) -->
+    <!-- MODAL: REQUEST PAYMENT -->
     <div id="modal-request-pay" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
         <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
             <div class="flex justify-between items-center">
@@ -428,7 +339,7 @@
                 <span class="material-symbols-outlined text-lg">qr_code_2</span> Generate Payment Request Link & QR
             </button>
 
-            <!-- Generated Request Container -->
+            <!-- Output Box -->
             <div id="request-pay-output" class="hidden flex-col gap-3 p-4 bg-white text-slate-900 rounded-2xl shadow-2xl mt-1">
                 <div class="flex flex-col items-center gap-2">
                     <canvas id="request-pay-qr-canvas" class="w-36 h-36"></canvas>
@@ -496,7 +407,7 @@
         </div>
     </div>
 
-    <!-- MODAL: SEND PAYMENT (WITH INTERACTIVE KEYPAD) -->
+    <!-- MODAL: SEND PAYMENT -->
     <div id="modal-send" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
         <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
             <div class="flex justify-between items-center">
@@ -716,26 +627,22 @@
     </div>
 
     <!-- MINI APP BOTTOM NAVIGATION BAR -->
-    <nav class="fixed bottom-0 left-0 w-full z-40 bg-[#0d0f0f]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-2xl shadow-2xl flex justify-around items-center h-20 px-4">
+    <nav class="fixed bottom-0 left-0 w-full z-40 bg-[#0d0f0f]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-2xl shadow-2xl flex justify-around items-center h-20 px-2">
         <button id="nav-btn-home" class="nav-tab-btn flex flex-col items-center justify-center text-[#ffc982] font-bold scale-105 transition-all">
             <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">home</span>
-            <span class="text-xs mt-0.5" data-i18n="home">Home</span>
-        </button>
-        <button id="nav-btn-pay" class="nav-tab-btn flex flex-col items-center justify-center text-[#d7c3ae] opacity-60 hover:opacity-100 hover:text-[#ffc982] transition-all">
-            <span class="material-symbols-outlined text-2xl">send</span>
-            <span class="text-xs mt-0.5" data-i18n="pay">Pay</span>
-        </button>
-        <button id="nav-btn-invoice" class="nav-tab-btn flex flex-col items-center justify-center text-[#d7c3ae] opacity-60 hover:opacity-100 hover:text-[#ffc982] transition-all">
-            <span class="material-symbols-outlined text-2xl">receipt_long</span>
-            <span class="text-xs mt-0.5" data-i18n="invoice">Invoice</span>
+            <span class="text-[10px] mt-0.5" data-i18n="home">Home</span>
         </button>
         <button id="nav-btn-history" class="nav-tab-btn flex flex-col items-center justify-center text-[#d7c3ae] opacity-60 hover:opacity-100 hover:text-[#ffc982] transition-all">
             <span class="material-symbols-outlined text-2xl">history</span>
-            <span class="text-xs mt-0.5" data-i18n="history">History</span>
+            <span class="text-[10px] mt-0.5" data-i18n="history">History</span>
         </button>
-        <button id="nav-btn-profile" class="nav-tab-btn flex flex-col items-center justify-center text-[#d7c3ae] opacity-60 hover:opacity-100 hover:text-[#ffc982] transition-all">
-            <span class="material-symbols-outlined text-2xl">person</span>
-            <span class="text-xs mt-0.5" data-i18n="profile">Profile</span>
+        <button id="nav-btn-analytics" class="nav-tab-btn flex flex-col items-center justify-center text-[#d7c3ae] opacity-60 hover:opacity-100 hover:text-[#ffc982] transition-all">
+            <span class="material-symbols-outlined text-2xl">insights</span>
+            <span class="text-[10px] mt-0.5" data-i18n="analytics">Analytics</span>
+        </button>
+        <button id="nav-btn-settings" class="nav-tab-btn flex flex-col items-center justify-center text-[#d7c3ae] opacity-60 hover:opacity-100 hover:text-[#ffc982] transition-all">
+            <span class="material-symbols-outlined text-2xl">settings</span>
+            <span class="text-[10px] mt-0.5" data-i18n="settings">Settings</span>
         </button>
     </nav>
 
