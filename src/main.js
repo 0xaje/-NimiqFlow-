@@ -127,6 +127,163 @@ let state = {
 };
 
 // ==========================================
+// DEEP LINK HANDLER & AUTO-PASTE ADDRESS FORMATTER
+// ==========================================
+function setupDeepLinkHandler() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const recipient = params.get('recipient') || params.get('to');
+        const valueLuna = params.get('value') || params.get('amount');
+        const message = params.get('message') || params.get('memo');
+
+        if (recipient || valueLuna) {
+            const recipientInput = document.getElementById('send-recipient-address');
+            const messageInput = document.getElementById('send-message');
+
+            if (recipientInput && recipient) {
+                recipientInput.value = formatNimiqAddress(recipient);
+            }
+            if (messageInput && message) {
+                messageInput.value = message;
+            }
+            if (valueLuna) {
+                const valNim = Number(valueLuna) > 10000 ? lunaToNim(valueLuna) : Number(valueLuna);
+                state.sendAmountStr = valNim.toString();
+            }
+
+            openModal('modal-send');
+            showToast('Payment link details pre-filled!');
+        }
+    } catch (err) {
+        console.warn('Deep link handler error:', err);
+    }
+}
+
+function setupAutoFormatInputs() {
+    const inputs = [
+        document.getElementById('send-recipient-address'),
+        document.getElementById('faucet-input-address'),
+        document.getElementById('invoice-merchant-address')
+    ];
+
+    inputs.forEach(input => {
+        if (!input) return;
+        input.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const formatted = formatNimiqAddress(val);
+            if (formatted !== val) {
+                const cursorPos = e.target.selectionStart;
+                e.target.value = formatted;
+                try { e.target.setSelectionRange(cursorPos + 1, cursorPos + 1); } catch {}
+            }
+        });
+    });
+}
+
+// ==========================================
+// INTERACTIVE ANALYTICS CANVAS CHART
+// ==========================================
+function renderAnalyticsChart() {
+    const canvas = document.getElementById('analytics-chart-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.parentElement.clientWidth || 300;
+    const height = canvas.parentElement.clientHeight || 140;
+
+    canvas.width = width * window.devicePixelRatio;
+    canvas.height = height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    ctx.clearRect(0, 0, width, height);
+
+    const txs = state.transactions;
+    const totalCountEl = document.getElementById('analytics-total-count');
+    const avgTransferEl = document.getElementById('analytics-avg-transfer');
+
+    if (totalCountEl) totalCountEl.textContent = txs.length.toString();
+
+    if (txs.length === 0) {
+        if (avgTransferEl) avgTransferEl.textContent = '0.00 NIM';
+        ctx.fillStyle = '#d7c3ae';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Connect wallet to load RPC analytics line chart', width / 2, height / 2);
+        return;
+    }
+
+    let sumNim = 0;
+    const points = txs.map(tx => {
+        const val = lunaToNim(tx.value || 0);
+        sumNim += val;
+        return val;
+    }).reverse();
+
+    const avgNim = sumNim / points.length;
+    if (avgTransferEl) avgTransferEl.textContent = `${formatNIM(avgNim)} NIM`;
+
+    const maxVal = Math.max(...points, 1);
+    const minVal = Math.min(...points, 0);
+    const range = (maxVal - minVal) || 1;
+
+    const padding = 15;
+    const chartW = width - padding * 2;
+    const chartH = height - padding * 2;
+
+    ctx.beginPath();
+    const stepX = points.length > 1 ? chartW / (points.length - 1) : chartW;
+
+    points.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartH - ((val - minVal) / range) * chartH;
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, 'rgba(246, 166, 35, 0.4)');
+    gradient.addColorStop(1, 'rgba(246, 166, 35, 0.0)');
+
+    ctx.lineTo(padding + (points.length - 1) * stepX, height - padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.beginPath();
+    points.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartH - ((val - minVal) / range) * chartH;
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    ctx.strokeStyle = '#f6a623';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    points.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartH - ((val - minVal) / range) * chartH;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffc982';
+        ctx.fill();
+        ctx.strokeStyle = '#462b00';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+    });
+}
+
+// ==========================================
 // TESTNET FAUCET MODAL & API CONTROLLER
 // ==========================================
 function openFaucetModal() {
@@ -609,6 +766,7 @@ function disconnectWallet() {
     localStorage.removeItem('nimiqflow_address');
     updateBalanceDisplay();
     renderTransactions();
+    renderAnalyticsChart();
     showToast('Nimiq Flow session disconnected.');
 }
 
@@ -632,6 +790,7 @@ async function fetchNimiqTransactionsData() {
     if (!state.address) return;
     state.transactions = await fetchRpcTransactions(state.address);
     renderTransactions();
+    renderAnalyticsChart();
 }
 
 async function refreshAllData() {
@@ -1133,6 +1292,10 @@ function setupNavigation() {
                 }
             }
         });
+
+        if (target === 'analytics') {
+            setTimeout(() => renderAnalyticsChart(), 50);
+        }
     }
 
     Object.keys(navBtnsMobile).forEach(key => {
@@ -1221,11 +1384,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupModalTriggers();
     setupFaucetTriggers();
     setupDeveloperMode();
+    setupAutoFormatInputs();
     setupSendModal();
     setupRequestPaymentModal();
     setupInvoiceBuilder();
     setupSignMessageModal();
     setupHistoryFilterButtons();
+    setupDeepLinkHandler();
     
     updateBalanceDisplay();
     if (state.address) {
