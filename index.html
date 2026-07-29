@@ -206,6 +206,19 @@
             <!-- Transactions Grouped List -->
             <div id="full-history-list" class="flex flex-col gap-2.5">
             </div>
+
+            <!-- PAYMENT REQUEST & INVOICE STATUS TRACKER -->
+            <section class="glass-card p-5 rounded-3xl border border-white/15 shadow-2xl flex flex-col gap-3.5 mt-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-[#ffc982] flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">receipt_long</span> Payment Request Tracker
+                    </h3>
+                    <span class="text-[10px] bg-[#f6a623]/20 text-[#ffc982] font-mono font-bold px-2 py-0.5 rounded-full uppercase">On-Chain Settlement</span>
+                </div>
+                <div id="tracker-requests-container" class="flex flex-col gap-2.5">
+                    <!-- Rendered dynamically via JS -->
+                </div>
+            </section>
         </div>
 
         <!-- ANALYTICS TAB CONTENT WITH INTERACTIVE LIVE CHART -->
@@ -238,7 +251,7 @@
                     <canvas id="analytics-chart-canvas" class="w-full h-full"></canvas>
                 </div>
 
-                <!-- Live Metrics Grid -->
+                <!-- Actionable Insights Grid -->
                 <div class="grid grid-cols-2 gap-2 text-xs font-mono">
                     <div class="p-3 bg-white/5 rounded-xl border border-white/10">
                         <span class="text-[10px] text-[#d7c3ae] uppercase block">Total Transactions</span>
@@ -247,6 +260,14 @@
                     <div class="p-3 bg-white/5 rounded-xl border border-white/10">
                         <span class="text-[10px] text-[#d7c3ae] uppercase block">Average Transfer</span>
                         <span id="analytics-avg-transfer" class="text-base font-bold text-[#ffc982]">0.00 NIM</span>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span class="text-[10px] text-[#d7c3ae] uppercase block">Largest Single Tx</span>
+                        <span id="analytics-largest-tx" class="text-base font-bold text-emerald-400">0.00 NIM</span>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span class="text-[10px] text-[#d7c3ae] uppercase block">Sent / Received</span>
+                        <span id="analytics-sent-received" class="text-base font-bold text-sky-300">0 / 0</span>
                     </div>
                 </div>
             </section>

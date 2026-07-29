@@ -6,14 +6,15 @@ A modern, native Mini App inside Nimiq Pay that enables users to send, receive, 
 
 ## Key Features
 
-- **Native Nimiq Pay SDK (`window.nimiqPay`)**: Account discovery (`listAccounts()`), payment checkout (`sendTransaction()`), and message signing (`signMessage()`).
-- **AI-assisted Natural Language Invoice Builder**: Type plain English instructions (e.g., *"Bill Acme Corp 200 NIM for logo design and 50 NIM for web setup"*) to automatically parse client details, line items, and CoinGecko USD/NIM exchange rates with scan-to-pay QR codes and PDF export (`window.print()`).
+- **Native Nimiq Pay Mini App SDK (`window.nimiqPay`)**: Built for the Nimiq Pay Mini App ecosystem with native account discovery (`listAccounts()`), payment checkout (`sendTransaction()`), and message signing (`signMessage()`), featuring a web Hub API fallback for browser compatibility.
+- **AI-Assisted Natural Language Invoice Builder**: Type plain English instructions (e.g., *"Bill Acme Corp 200 NIM for logo design and 50 NIM for web setup"*) to automatically parse client details, line items, and CoinGecko USD/NIM exchange rates with scan-to-pay QR codes and PDF export (`window.print()`).
+- **Payment Request & Status Tracker**: Live payment request management tool displaying real-time payment status badges (`✓ Paid`, `Pending`, `Expired`), on-chain settlement checks, and block explorer deep-links.
+- **Actionable Analytics & Insights**: Real-time transaction metrics including volume line chart, **Largest Payment**, **Payments Received vs Sent count**, and **Top Transacted Recipient**.
+- **Privacy-Preserving Device Verification**: Uses the Nimiq Mini App SDK's privacy-preserving device identifier (`requestDeviceIdentifier()`) for spam prevention and preference persistence.
 - **Safe Testnet Testing Environment (`TestAlbatross`)**: Complete support for `TestAlbatross` with testnet Hub integration (`https://hub.nimiq-testnet.com`), dynamic network environment toggle, and 1-tap Testnet Faucet for zero-risk judge testing.
 - **Native Web Share (`navigator.share`)**: 1-tap mobile sharing for payment request links, receiving addresses, and checkout links directly via WhatsApp, Telegram, or system share sheets.
 - **Transaction Accounting CSV Export**: 1-click download of full transaction history in formatted `.csv` for business accounting and record-keeping.
 - **Live Nimiq Address Checksum Validation**: Real-time visual checksum verification (`NQxx...`) with instant Demo Address quick-fill for fast judge testing.
-- **Trusted Device Verification**: Privacy-preserving Mini App SDK device identifier (`requestDeviceIdentifier()`) for spam prevention and preference persistence.
-- **Shareable Payment Requests**: Generates Nimiq Hub checkout deep links (`https://hub.nimiq.com/checkout?...`), protocol URI QR codes (`nimiq:...`), and custom payment memos.
 - **Cryptographic Message Signing**: Challenge authentication statement signing using Nimiq Pay key pairs with cryptographic signature verification (`0x...`).
 - **Multilingual Support (i18n)**: Automatic locale detection with one-tap switcher for English (`en`), German (`de`), and Spanish (`es`).
 - **Developer Settings**: Network toggle between `TestAlbatross` and `MainAlbatross` with real-time RPC node status, consensus tracking, block height queries, and empirical Testnet Faucet integration.

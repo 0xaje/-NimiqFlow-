@@ -129,7 +129,8 @@ let state = {
     transactions: {
         TestAlbatross: JSON.parse(localStorage.getItem('nimiqflow_txs_TestAlbatross') || '[]'),
         MainAlbatross: JSON.parse(localStorage.getItem('nimiqflow_txs_MainAlbatross') || '[]')
-    }
+    },
+    trackedRequests: JSON.parse(localStorage.getItem('nimiqflow_tracked_requests') || 'null')
 };
 
 function getActiveNimBalance() {
@@ -240,6 +241,25 @@ function renderAnalyticsChart() {
 
     const avgNim = sumNim / points.length;
     if (avgTransferEl) avgTransferEl.textContent = `${formatNIM(avgNim)} NIM`;
+
+    const largestNim = Math.max(...points, 0);
+    const largestEl = document.getElementById('analytics-largest-tx');
+    if (largestEl) largestEl.textContent = `${formatNIM(largestNim)} NIM`;
+
+    const cleanAddr = (state.address || '').replace(/\s+/g, '').toUpperCase();
+    let sentCount = 0;
+    let receivedCount = 0;
+
+    txs.forEach(tx => {
+        const isIncoming = tx.to && tx.to.replace(/\s+/g, '').toUpperCase() === cleanAddr;
+        if (isIncoming) receivedCount++;
+        else sentCount++;
+    });
+
+    const sentRecEl = document.getElementById('analytics-sent-received');
+    if (sentRecEl) sentRecEl.textContent = `${sentCount} Sent / ${receivedCount} Recv`;
+
+    renderPaymentRequestTracker();
 
     const maxVal = Math.max(...points, 1);
     const minVal = Math.min(...points, 0);
@@ -617,6 +637,22 @@ function setupRequestPaymentModal() {
         const paymentUri = `nimiq:${cleanAddr}?value=${luna}${memo ? `&message=${encodeURIComponent(memo)}` : ''}`;
 
         state.lastGeneratedRequestUrl = shareableUrl;
+
+        // Record request in Payment Status Tracker state
+        const reqs = state.trackedRequests || [];
+        const newTrackedReq = {
+            id: 'req_' + Date.now().toString().slice(-4),
+            label: `Request #${reqs.length + 1}`,
+            memo: memo,
+            amountNim: amountNim,
+            createdAt: Date.now(),
+            status: 'PENDING',
+            checkoutUrl: shareableUrl,
+            txHash: null
+        };
+        state.trackedRequests = [newTrackedReq, ...reqs];
+        localStorage.setItem('nimiqflow_tracked_requests', JSON.stringify(state.trackedRequests));
+        renderPaymentRequestTracker();
 
         if (qrCanvas) {
             QRCode.toCanvas(qrCanvas, paymentUri, { width: 150, margin: 1 }, (err) => {
@@ -1231,6 +1267,94 @@ function renderTransactions() {
             fullContainer.innerHTML = filteredTxList.map(renderTxItem).join('');
         }
     }
+    renderPaymentRequestTracker();
+}
+
+function renderPaymentRequestTracker() {
+    const container = document.getElementById('tracker-requests-container');
+    if (!container) return;
+
+    if (!state.trackedRequests || !Array.isArray(state.trackedRequests) || state.trackedRequests.length === 0) {
+        state.trackedRequests = [
+            {
+                id: 'inv_104',
+                label: 'Invoice #104',
+                memo: 'Logo & UI Web Design',
+                amountNim: 250,
+                createdAt: Date.now() - 4 * 60 * 1000,
+                status: 'PAID',
+                txHash: '0x4f8a912c3e12089456789abcdef1234567890abc'
+            },
+            {
+                id: 'req_101',
+                label: 'Request #101',
+                memo: 'Shared Dinner Bill Split',
+                amountNim: 150,
+                createdAt: Date.now() - 18 * 60 * 1000,
+                status: 'PENDING',
+                txHash: null
+            }
+        ];
+        localStorage.setItem('nimiqflow_tracked_requests', JSON.stringify(state.trackedRequests));
+    }
+
+    // Check active transactions for on-chain payment matching
+    const activeTxs = getActiveTransactions();
+    state.trackedRequests.forEach(req => {
+        if (req.status === 'PENDING' && activeTxs.length > 0) {
+            const match = activeTxs.find(tx => {
+                const valNim = lunaToNim(tx.value || 0);
+                return Math.abs(valNim - req.amountNim) < 0.1;
+            });
+            if (match) {
+                req.status = 'PAID';
+                req.txHash = match.hash;
+            }
+        }
+    });
+
+    container.innerHTML = state.trackedRequests.map(req => {
+        const isPaid = req.status === 'PAID';
+        const isPending = req.status === 'PENDING';
+        
+        const badgeBg = isPaid 
+            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+            : isPending 
+            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+            : 'bg-red-500/20 text-red-400 border border-red-500/30';
+            
+        const statusText = isPaid ? '✓ Paid' : isPending ? 'Pending' : 'Expired';
+        const timeAgoStr = req.createdAt ? formatDate(Math.floor(req.createdAt / 1000)) : 'Recent';
+        const explorerUrl = req.txHash ? getTransactionExplorerUrl(req.txHash) : null;
+
+        return `
+            <div class="p-3.5 glass-card rounded-2xl border border-white/10 flex items-center justify-between gap-3 hover:bg-white/10 transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl ${isPaid ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'} flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">${isPaid ? 'task_alt' : 'hourglass_top'}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">${req.label}</span>
+                            <span class="text-[9px] px-2 py-0.5 rounded-full font-mono font-bold uppercase ${badgeBg}">${statusText}</span>
+                        </div>
+                        <span class="text-[10px] text-[#d7c3ae]">${req.memo || 'Payment Request'} • ${timeAgoStr}</span>
+                    </div>
+                </div>
+                <div class="text-right flex flex-col items-end gap-1">
+                    <span class="block text-xs font-mono font-bold text-[#ffc982]">${formatNIM(req.amountNim)} NIM</span>
+                    ${explorerUrl ? `
+                        <a href="${explorerUrl}" target="_blank" rel="noopener" class="text-[9px] text-emerald-400 hover:underline flex items-center gap-0.5">
+                            <span>View Explorer</span>
+                            <span class="material-symbols-outlined text-[9px]">open_in_new</span>
+                        </a>
+                    ` : `
+                        <span class="text-[9px] text-white/40 font-mono">Awaiting Tx</span>
+                    `}
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function setupHistoryFilterButtons() {
