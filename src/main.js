@@ -1274,31 +1274,21 @@ function renderPaymentRequestTracker() {
     const container = document.getElementById('tracker-requests-container');
     if (!container) return;
 
-    if (!state.trackedRequests || !Array.isArray(state.trackedRequests) || state.trackedRequests.length === 0) {
-        state.trackedRequests = [
-            {
-                id: 'inv_104',
-                label: 'Invoice #104',
-                memo: 'Logo & UI Web Design',
-                amountNim: 250,
-                createdAt: Date.now() - 4 * 60 * 1000,
-                status: 'PAID',
-                txHash: '0x4f8a912c3e12089456789abcdef1234567890abc'
-            },
-            {
-                id: 'req_101',
-                label: 'Request #101',
-                memo: 'Shared Dinner Bill Split',
-                amountNim: 150,
-                createdAt: Date.now() - 18 * 60 * 1000,
-                status: 'PENDING',
-                txHash: null
-            }
-        ];
-        localStorage.setItem('nimiqflow_tracked_requests', JSON.stringify(state.trackedRequests));
+    if (!state.trackedRequests || !Array.isArray(state.trackedRequests)) {
+        state.trackedRequests = [];
     }
 
-    // Check active transactions for on-chain payment matching
+    if (state.trackedRequests.length === 0) {
+        container.innerHTML = `
+            <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
+                <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">receipt_long</span>
+                <p>No active payment requests tracked yet. Generate a payment request or AI invoice to track settlement status in real time.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Check active transactions for on-chain payment settlement matching
     const activeTxs = getActiveTransactions();
     state.trackedRequests.forEach(req => {
         if (req.status === 'PENDING' && activeTxs.length > 0) {
@@ -1323,7 +1313,7 @@ function renderPaymentRequestTracker() {
             ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
             : 'bg-red-500/20 text-red-400 border border-red-500/30';
             
-        const statusText = isPaid ? '✓ Paid' : isPending ? 'Pending' : 'Expired';
+        const statusText = isPaid ? 'Paid' : isPending ? 'Pending' : 'Expired';
         const timeAgoStr = req.createdAt ? formatDate(Math.floor(req.createdAt / 1000)) : 'Recent';
         const explorerUrl = req.txHash ? getTransactionExplorerUrl(req.txHash) : null;
 
@@ -1338,7 +1328,7 @@ function renderPaymentRequestTracker() {
                             <span class="text-xs font-bold text-white">${req.label}</span>
                             <span class="text-[9px] px-2 py-0.5 rounded-full font-mono font-bold uppercase ${badgeBg}">${statusText}</span>
                         </div>
-                        <span class="text-[10px] text-[#d7c3ae]">${req.memo || 'Payment Request'} • ${timeAgoStr}</span>
+                        <span class="text-[10px] text-[#d7c3ae]">${req.memo || 'Payment Request'} - ${timeAgoStr}</span>
                     </div>
                 </div>
                 <div class="text-right flex flex-col items-end gap-1">
