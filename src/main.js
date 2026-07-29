@@ -10,12 +10,12 @@ const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2
 // Internationalization (i18n) Dictionary
 const TRANSLATIONS = {
     en: {
-        mini_app_subtitle: 'Nimiq Pay Mini App',
+        mini_app_subtitle: 'Smart Crypto Payments, Simplified.',
         splash_initializing: 'Initializing Native Mini App SDK...',
         device_verified: 'Device Verified',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Connect with Nimiq Pay',
-        banner_desc: 'Connect via Native Mini App SDK (init & listAccounts) to inspect live balance, send NIM, and issue smart invoices.',
+        banner_desc: 'The smartest way to send, receive, and request crypto payments. Connect via Native Mini App SDK to start flowing.',
         total_balance: 'Total Balance (USD)',
         not_connected: 'Not Connected',
         nim_balance: 'Nimiq Crypto Balance',
@@ -46,18 +46,18 @@ const TRANSLATIONS = {
         net_worth: 'Net Worth (USD)',
         holdings: 'Holdings (NIM)',
         language_label: 'App Language',
-        disconnect_session: 'Disconnect Nimiq Pay Session',
+        disconnect_session: 'Disconnect Nimiq Flow Session',
         home: 'Home',
         pay: 'Pay',
         profile: 'Profile'
     },
     de: {
-        mini_app_subtitle: 'Nimiq Pay Mini-App',
+        mini_app_subtitle: 'Intelligente Krypto-Zahlungen, Vereinfacht.',
         splash_initializing: 'Native Mini App SDK wird initialisiert...',
         device_verified: 'Gerät Bestätigt',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Mit Nimiq Pay verbinden',
-        banner_desc: 'Verbinden Sie sich über das Native Mini App SDK (init & listAccounts), um das Guthaben einzusehen und NIM zu senden.',
+        banner_desc: 'Der intelligenteste Weg, Krypto-Zahlungen zu senden, zu empfangen und anzufordern.',
         total_balance: 'Gesamtguthaben (USD)',
         not_connected: 'Nicht verbunden',
         nim_balance: 'Nimiq Krypto-Guthaben',
@@ -88,18 +88,18 @@ const TRANSLATIONS = {
         net_worth: 'Gesamtwert (USD)',
         holdings: 'Bestände (NIM)',
         language_label: 'App-Sprache',
-        disconnect_session: 'Nimiq Pay Sitzung trennen',
+        disconnect_session: 'Nimiq Flow Sitzung trennen',
         home: 'Start',
         pay: 'Zahlen',
         profile: 'Profil'
     },
     es: {
-        mini_app_subtitle: 'Mini App Nimiq Pay',
+        mini_app_subtitle: 'Pagos Cripto Inteligentes, Simplificados.',
         splash_initializing: 'Inicializando Native Mini App SDK...',
         device_verified: 'Dispositivo Verificado',
         mainnet_live: 'Nimiq Mainnet en Vivo',
         connect: 'Conectar con Nimiq Pay',
-        banner_desc: 'Conéctese mediante Native Mini App SDK (init & listAccounts) para ver saldo en vivo, enviar NIM y crear facturas.',
+        banner_desc: 'La forma más inteligente de enviar, recibir y solicitar pagos en criptomonedas.',
         total_balance: 'Saldo Total (USD)',
         not_connected: 'No conectado',
         nim_balance: 'Saldo Nimiq Cripto',
@@ -130,7 +130,7 @@ const TRANSLATIONS = {
         net_worth: 'Patrimonio (USD)',
         holdings: 'Criptoactivos (NIM)',
         language_label: 'Idioma de la App',
-        disconnect_session: 'Desconectar Sesión Nimiq Pay',
+        disconnect_session: 'Desconectar Sesión Nimiq Flow',
         home: 'Inicio',
         pay: 'Pagar',
         profile: 'Perfil'
@@ -138,9 +138,9 @@ const TRANSLATIONS = {
 };
 
 let state = {
-    address: localStorage.getItem('korripay_address') || '',
-    deviceId: localStorage.getItem('korripay_device_id') || '',
-    currentLang: localStorage.getItem('korripay_lang') || getInitialLanguage(),
+    address: localStorage.getItem('nimiqflow_address') || localStorage.getItem('korripay_address') || '',
+    deviceId: localStorage.getItem('nimiqflow_device_id') || localStorage.getItem('korripay_device_id') || '',
+    currentLang: localStorage.getItem('nimiqflow_lang') || getInitialLanguage(),
     nimBalance: 0,
     usdRate: 0.00047,
     usdBalance: 0,
@@ -177,8 +177,8 @@ async function getNativeNimiqProvider() {
     return {
         listAccounts: async () => {
             if (hubApi) {
-                const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
-                return res && res.address ? [{ address: res.address, label: 'Nimiq Pay Account' }] : [];
+                const res = await hubApi.chooseAddress({ appName: 'Nimiq Flow' });
+                return res && res.address ? [{ address: res.address, label: 'Nimiq Flow Account' }] : [];
             }
             return [];
         },
@@ -190,7 +190,7 @@ async function getNativeNimiqProvider() {
         signMessage: async (msg) => {
             if (hubApi) {
                 return await hubApi.signMessage({
-                    appName: 'KorriPay',
+                    appName: 'Nimiq Flow',
                     message: msg
                 });
             }
@@ -209,7 +209,7 @@ async function connectWithNimiqPay() {
                 const addr = typeof raw === 'string' ? raw : (raw.address || raw.userAddress);
                 if (addr) {
                     setAddress(addr);
-                    showToast(`Connected via Native Mini App SDK: ${formatNimiqAddress(addr)}`);
+                    showToast(`Connected via Nimiq Flow: ${formatNimiqAddress(addr)}`);
                     return;
                 }
             }
@@ -254,7 +254,7 @@ function setupRequestPaymentModal() {
         }
 
         const amountNim = parseFloat(inputAmount?.value || 0);
-        const memo = (inputMemo?.value || '').trim();
+        const memo = (inputMemo?.value || 'Payment via Nimiq Flow').trim();
 
         if (amountNim <= 0) {
             showToast('Please enter a valid NIM amount for the request');
@@ -264,10 +264,7 @@ function setupRequestPaymentModal() {
         const luna = nimToLuna(amountNim);
         const cleanAddr = state.address.replace(/\s+/g, '');
         
-        // Shareable Nimiq Hub checkout deep link
         const shareableUrl = `https://hub.nimiq.com/checkout?recipient=${cleanAddr}&value=${luna}${memo ? `&message=${encodeURIComponent(memo)}` : ''}`;
-        
-        // Nimiq Protocol URI for QR Code
         const paymentUri = `nimiq:${cleanAddr}?value=${luna}${memo ? `&message=${encodeURIComponent(memo)}` : ''}`;
 
         state.lastGeneratedRequestUrl = shareableUrl;
@@ -285,7 +282,7 @@ function setupRequestPaymentModal() {
             outputContainer.classList.add('flex');
         }
 
-        showToast('Payment request link & QR code generated!');
+        showToast('Nimiq Flow payment request link generated!');
     });
 
     if (btnCopyLink) {
@@ -319,7 +316,7 @@ function setupSignMessageModal() {
             return;
         }
 
-        const msgText = (inputMsg ? inputMsg.value : 'Verify KorriPay identity').trim();
+        const msgText = (inputMsg ? inputMsg.value : 'Verify Nimiq Flow identity').trim();
         if (!msgText) {
             showToast('Please enter a message statement to sign');
             return;
@@ -337,7 +334,7 @@ function setupSignMessageModal() {
             if (sigResult && sigResult.signature) {
                 sigHash = sigResult.signature;
             } else {
-                const text = `NIMIQ_PAY_SIGN_MSG:${state.address}:${msgText}:${Date.now()}`;
+                const text = `NIMIQ_FLOW_SIGN_MSG:${state.address}:${msgText}:${Date.now()}`;
                 const encoder = new TextEncoder();
                 const data = encoder.encode(text);
                 const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -355,7 +352,7 @@ function setupSignMessageModal() {
                 container.classList.add('flex');
             }
 
-            showToast('Identity message signed successfully!');
+            showToast('Nimiq Flow identity signed successfully!');
         } catch (err) {
             console.error('Sign message error:', err);
             showToast('Signature cancelled or rejected');
@@ -387,7 +384,7 @@ function getInitialLanguage() {
 function applyLanguage(lang) {
     const targetLang = ['en', 'de', 'es'].includes(lang) ? lang : 'en';
     state.currentLang = targetLang;
-    localStorage.setItem('korripay_lang', targetLang);
+    localStorage.setItem('nimiqflow_lang', targetLang);
 
     const dict = TRANSLATIONS[targetLang] || TRANSLATIONS.en;
 
@@ -443,13 +440,13 @@ async function requestDeviceIdentifier() {
         
         const formattedId = `DEV-${hexHash.slice(0, 4)}-${hexHash.slice(4, 8)}-${hexHash.slice(8, 12)}`;
         state.deviceId = formattedId;
-        localStorage.setItem('korripay_device_id', formattedId);
+        localStorage.setItem('nimiqflow_device_id', formattedId);
         updateDeviceIdUI(formattedId);
         return formattedId;
     } catch (err) {
         const fallbackId = `DEV-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
         state.deviceId = fallbackId;
-        localStorage.setItem('korripay_device_id', fallbackId);
+        localStorage.setItem('nimiqflow_device_id', fallbackId);
         updateDeviceIdUI(fallbackId);
         return fallbackId;
     }
@@ -532,7 +529,7 @@ function setAddress(newAddr) {
     const clean = newAddr.trim();
     if (!clean) return;
     state.address = formatNimiqAddress(clean);
-    localStorage.setItem('korripay_address', state.address);
+    localStorage.setItem('nimiqflow_address', state.address);
     updateBalanceDisplay();
     refreshAllData();
 }
@@ -542,10 +539,11 @@ function disconnectWallet() {
     state.nimBalance = 0;
     state.usdBalance = 0;
     state.transactions = [];
+    localStorage.removeItem('nimiqflow_address');
     localStorage.removeItem('korripay_address');
     updateBalanceDisplay();
     renderTransactions();
-    showToast('Nimiq Pay session disconnected.');
+    showToast('Nimiq Flow session disconnected.');
 }
 
 // ==========================================
@@ -910,7 +908,7 @@ function setupSendModal() {
                 const nimiq = await getNativeNimiqProvider();
                 if (nimiq && typeof nimiq.sendTransaction === 'function') {
                     await nimiq.sendTransaction({
-                        appName: 'KorriPay',
+                        appName: 'Nimiq Flow',
                         recipient: recipient,
                         value: luna,
                         extraData: message
@@ -1187,7 +1185,6 @@ function setupModalTriggers() {
 
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
-    document.getElementById('btn-close-[#modal-request-pay]');
     document.getElementById('btn-close-request-pay')?.addEventListener('click', () => closeModal('modal-request-pay'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
