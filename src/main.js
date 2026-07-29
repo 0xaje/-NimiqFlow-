@@ -14,7 +14,8 @@ let state = {
     usdBalance: 0,
     transactions: [],
     isLoading: false,
-    activeTab: 'home'
+    activeTab: 'home',
+    sendAmountStr: '0'
 };
 
 // Initialize Nimiq Hub API
@@ -314,6 +315,7 @@ function updateBalanceDisplay() {
     const nimEl = document.getElementById('display-nim-balance');
     const usdEl = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
+    const sendModalBalance = document.getElementById('send-modal-balance');
     const connectBanner = document.getElementById('wallet-connect-banner');
     const btnConnectLabel = document.getElementById('btn-connect-label');
 
@@ -322,6 +324,7 @@ function updateBalanceDisplay() {
         if (nimEl) nimEl.textContent = '0.00';
         if (usdEl) usdEl.textContent = '$0.00';
         if (receiveAddrEl) receiveAddrEl.textContent = 'Please connect wallet';
+        if (sendModalBalance) sendModalBalance.textContent = '0.00 NIM';
         if (connectBanner) connectBanner.classList.remove('hidden');
         if (btnConnectLabel) btnConnectLabel.textContent = 'Connect Wallet';
         return;
@@ -336,6 +339,7 @@ function updateBalanceDisplay() {
     if (nimEl) nimEl.textContent = formatNIM(state.nimBalance);
     if (usdEl) usdEl.textContent = formatUSD(state.usdBalance);
     if (receiveAddrEl) receiveAddrEl.textContent = formattedAddr;
+    if (sendModalBalance) sendModalBalance.textContent = `${formatNIM(state.nimBalance)} NIM`;
 
     renderReceiveQRCode();
 }
@@ -419,10 +423,10 @@ function renderReceiveQRCode() {
 }
 
 // ==========================================
-// SEND PAYMENT & QR GENERATOR
+// SEND PAYMENT & INTERACTIVE NUMPAD
 // ==========================================
 function setupSendModal() {
-    const sendAmtInput = document.getElementById('send-amount-nim');
+    const numpadDisp = document.getElementById('send-numpad-display');
     const sendUsdEq = document.getElementById('send-usd-equivalent');
     const recipientInput = document.getElementById('send-recipient-address');
     const messageInput = document.getElementById('send-message');
@@ -432,18 +436,52 @@ function setupSendModal() {
     const qrCanvas = document.getElementById('send-qr-canvas');
     const qrUriText = document.getElementById('send-qr-uri');
 
-    if (sendAmtInput) {
-        sendAmtInput.addEventListener('input', () => {
-            const val = parseFloat(sendAmtInput.value) || 0;
-            const usdVal = val * state.usdRate;
-            if (sendUsdEq) sendUsdEq.textContent = `≈ ${formatUSD(usdVal)} USD`;
-        });
+    function updateNumpadAmount(char) {
+        if (char === '.') {
+            if (!state.sendAmountStr.includes('.')) {
+                state.sendAmountStr += '.';
+            }
+        } else {
+            if (state.sendAmountStr === '0') {
+                state.sendAmountStr = char;
+            } else {
+                if (state.sendAmountStr.includes('.') && state.sendAmountStr.split('.')[1].length >= 2) return;
+                state.sendAmountStr += char;
+            }
+        }
+        renderNumpadAmount();
     }
+
+    function backspaceNumpadAmount() {
+        if (state.sendAmountStr.length <= 1) {
+            state.sendAmountStr = '0';
+        } else {
+            state.sendAmountStr = state.sendAmountStr.slice(0, -1);
+        }
+        renderNumpadAmount();
+    }
+
+    function renderNumpadAmount() {
+        if (numpadDisp) numpadDisp.textContent = state.sendAmountStr;
+        const val = parseFloat(state.sendAmountStr) || 0;
+        const usdVal = val * state.usdRate;
+        if (sendUsdEq) sendUsdEq.textContent = `≈ ${formatUSD(usdVal)} USD`;
+    }
+
+    // Attach keypad event listeners
+    document.querySelectorAll('.numpad-btn[data-num]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const char = btn.getAttribute('data-num');
+            updateNumpadAmount(char);
+        });
+    });
+
+    document.getElementById('btn-numpad-backspace')?.addEventListener('click', backspaceNumpadAmount);
 
     if (btnHub) {
         btnHub.addEventListener('click', () => {
             const recipient = recipientInput ? recipientInput.value.trim() : '';
-            const amount = parseFloat(sendAmtInput ? sendAmtInput.value : 0) || 0;
+            const amount = parseFloat(state.sendAmountStr) || 0;
             const message = messageInput ? messageInput.value.trim() : '';
 
             if (!recipient) {
@@ -452,7 +490,7 @@ function setupSendModal() {
             }
 
             if (amount <= 0) {
-                showToast('Please enter a valid NIM amount');
+                showToast('Please enter a valid NIM amount using the keypad');
                 return;
             }
 
@@ -480,7 +518,7 @@ function setupSendModal() {
             const isHidden = qrContainer.classList.contains('hidden');
             if (isHidden) {
                 const recipient = recipientInput ? recipientInput.value.trim() : state.address;
-                const amount = parseFloat(sendAmtInput ? sendAmtInput.value : 0) || 0;
+                const amount = parseFloat(state.sendAmountStr) || 0;
                 const luna = nimToLuna(amount);
                 const uri = `nimiq:${recipient.replace(/\s+/g, '')}${amount > 0 ? `?value=${luna}` : ''}`;
                 
@@ -496,6 +534,8 @@ function setupSendModal() {
             }
         });
     }
+
+    renderNumpadAmount();
 }
 
 // ==========================================

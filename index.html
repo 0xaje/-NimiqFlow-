@@ -114,11 +114,9 @@
         <div id="tab-content-home" class="flex flex-col gap-5">
             <!-- Hero Glassmorphic Balance Card Section -->
             <section id="hero-balance-card" class="relative w-full rounded-[24px] overflow-hidden shadow-[0_12px_32px_rgba(246,166,35,0.25)] bg-gradient-to-br from-[#f6a623] to-[#835400] flex flex-col justify-between p-6 text-white border border-white/20 transition-all duration-300">
-                <!-- Ambient decorative elements -->
                 <div class="absolute -top-12 -right-12 w-48 h-48 bg-white/20 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-black/20 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <!-- WebGL Shader Background Canvas -->
                 <div class="absolute inset-0 z-0 pointer-events-none opacity-25">
                     <canvas id="shader-canvas" class="w-full h-full block"></canvas>
                 </div>
@@ -143,7 +141,6 @@
                     </div>
                 </div>
 
-                <!-- Crypto Sub-Card -->
                 <div class="relative z-10 glass rounded-xl p-3.5 mt-5 flex items-center justify-between border border-white/30 bg-black/20 backdrop-blur-md">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-[#ffc982]">
@@ -357,48 +354,79 @@
         </div>
     </div>
 
-    <!-- MODAL: SEND PAYMENT -->
-    <div id="modal-send" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15">
+    <!-- MODAL: SEND PAYMENT (WITH INTERACTIVE KEYPAD) -->
+    <div id="modal-send" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-[#ffc982] flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#ffc982]">send</span> Send Nimiq (NIM)
+                    <span class="material-symbols-outlined text-[#ffc982]">send</span> Send Money
                 </h3>
                 <button id="btn-close-send" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white">
                     <span class="material-symbols-outlined text-sm">close</span>
                 </button>
             </div>
 
-            <div class="flex flex-col gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">Recipient Nimiq Address</label>
-                    <input id="send-recipient-address" type="text" placeholder="NQXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX" class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
-                </div>
-
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-xs font-semibold text-[#d7c3ae]">Amount (NIM)</label>
-                        <span id="send-usd-equivalent" class="text-xs font-mono text-[#ffc982]">≈ $0.00 USD</span>
-                    </div>
-                    <input id="send-amount-nim" type="number" step="0.01" min="0.01" placeholder="0.00" class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-lg font-bold text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">Payment Note / Message (Optional)</label>
-                    <input id="send-message" type="text" placeholder="e.g. Service payment" class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white focus:border-[#ffc982] focus:outline-none"/>
-                </div>
-
-                <div id="send-qr-preview-container" class="hidden flex-col items-center justify-center p-4 bg-white rounded-2xl mt-1">
-                    <canvas id="send-qr-canvas"></canvas>
-                    <p class="text-[11px] text-gray-700 font-mono mt-2 text-center break-all" id="send-qr-uri"></p>
+            <!-- Recipient Input Section -->
+            <div class="flex flex-col gap-2">
+                <label class="block text-xs font-semibold text-[#d7c3ae]">Recipient Address</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-[#d7c3ae]">
+                        <span class="material-symbols-outlined text-sm">search</span>
+                    </span>
+                    <input id="send-recipient-address" type="text" placeholder="NQXX XXXX XXXX..." class="w-full bg-black/50 border border-white/20 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
                 </div>
             </div>
 
-            <div class="flex flex-col gap-2 mt-2">
-                <button id="btn-submit-send-hub" class="w-full bg-[#f6a623] text-[#462b00] font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg">
-                    <span class="material-symbols-outlined text-lg">open_in_new</span> Launch Nimiq Hub Checkout
+            <!-- Amount Entry Display -->
+            <div class="text-center py-2 bg-white/5 rounded-2xl border border-white/10">
+                <p class="text-[11px] text-[#d7c3ae] uppercase font-semibold">Enter Amount (NIM)</p>
+                <div class="flex items-baseline justify-center gap-1.5 my-1">
+                    <span id="send-numpad-display" class="text-4xl font-extrabold text-[#ffc982] font-mono tracking-tight">0.00</span>
+                    <span class="text-lg font-bold text-[#ffc982]">NIM</span>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs font-mono text-white/70">
+                    <span id="send-usd-equivalent">≈ $0.00 USD</span>
+                    <span>|</span>
+                    <span>Balance: <span id="send-modal-balance">0.00 NIM</span></span>
+                </div>
+            </div>
+
+            <!-- Optional Note -->
+            <div>
+                <input id="send-message" type="text" placeholder="Payment note (optional)" class="w-full bg-black/50 border border-white/20 rounded-xl px-3.5 py-2 text-xs text-white focus:border-[#ffc982] focus:outline-none"/>
+            </div>
+
+            <!-- Numeric Keypad (3x4 Grid) -->
+            <div class="keypad-grid grid grid-cols-3 gap-2">
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="1">1</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="2">2</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="3">3</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="4">4</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="5">5</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="6">6</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="7">7</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="8">8</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="9">9</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num=".">.</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="0">0</button>
+                <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" id="btn-numpad-backspace">
+                    <span class="material-symbols-outlined">backspace</span>
                 </button>
-                <button id="btn-toggle-send-qr" class="w-full bg-white/10 text-white font-semibold py-2.5 rounded-2xl hover:bg-white/20 transition-all text-xs">
+            </div>
+
+            <!-- QR Preview Container -->
+            <div id="send-qr-preview-container" class="hidden flex-col items-center justify-center p-4 bg-white rounded-2xl mt-1">
+                <canvas id="send-qr-canvas"></canvas>
+                <p class="text-[11px] text-gray-700 font-mono mt-2 text-center break-all" id="send-qr-uri"></p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2 mt-1">
+                <button id="btn-submit-send-hub" class="w-full bg-[#f6a623] text-[#462b00] font-bold py-3 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg">
+                    <span>Review Transaction</span>
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                </button>
+                <button id="btn-toggle-send-qr" class="w-full bg-white/10 text-white font-semibold py-2 rounded-2xl hover:bg-white/20 transition-all text-xs">
                     Show Nimiq Payment QR Code
                 </button>
             </div>
