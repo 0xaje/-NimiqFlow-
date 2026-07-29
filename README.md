@@ -1,13 +1,14 @@
 # Nimiq Flow — Smart Crypto Payments, Simplified
 
-A modern, native Mini App inside Nimiq Pay that enables users to send, receive, request, and manage NIM payments with an AI-powered invoicing generator and real-time transaction insights.
+A modern, native Mini App inside Nimiq Pay that enables users to send, receive, request, and manage NIM payments with an AI-assisted natural language invoice builder and real-time transaction insights.
 
 ---
 
 ## Key Features
 
 - **Native Nimiq Pay SDK (`window.nimiqPay`)**: Account discovery (`listAccounts()`), payment checkout (`sendTransaction()`), and message signing (`signMessage()`).
-- **AI Natural Language Invoice Assist**: Type plain English instructions (e.g., *"Bill Acme Corp 200 NIM for logo design and 50 NIM for web setup"*) to automatically parse client details, line items, and CoinGecko USD/NIM exchange rates with scan-to-pay QR codes and PDF export (`window.print()`).
+- **AI-assisted Natural Language Invoice Builder**: Type plain English instructions (e.g., *"Bill Acme Corp 200 NIM for logo design and 50 NIM for web setup"*) to automatically parse client details, line items, and CoinGecko USD/NIM exchange rates with scan-to-pay QR codes and PDF export (`window.print()`).
+- **Safe Testnet Testing Environment (`TestAlbatross`)**: Complete support for `TestAlbatross` with testnet Hub integration (`https://hub.nimiq-testnet.com`), dynamic network environment toggle, and 1-tap Testnet Faucet for zero-risk judge testing.
 - **Native Web Share (`navigator.share`)**: 1-tap mobile sharing for payment request links, receiving addresses, and checkout links directly via WhatsApp, Telegram, or system share sheets.
 - **Transaction Accounting CSV Export**: 1-click download of full transaction history in formatted `.csv` for business accounting and record-keeping.
 - **Live Nimiq Address Checksum Validation**: Real-time visual checksum verification (`NQxx...`) with instant Demo Address quick-fill for fast judge testing.

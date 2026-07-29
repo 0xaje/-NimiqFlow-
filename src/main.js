@@ -27,10 +27,10 @@ const TRANSLATIONS = {
         send: 'Send',
         receive: 'Receive',
         request_pay: 'Request',
-        ai_invoice: 'AI Invoice',
+        ai_invoice: 'AI Invoice Builder',
         invoice: 'Invoice',
         sign_msg: 'Sign Msg',
-        smart_invoice: 'AI Smart Invoice Generator',
+        smart_invoice: 'AI-assisted Natural Language Invoice Builder',
         recent_activity: 'Recent Activity',
         view_all: 'View All',
         connect_prompt: 'Connect with Nimiq Pay to load testnet transactions.',
@@ -375,27 +375,50 @@ function setupDeveloperMode() {
     const radioTest = document.getElementById('dev-net-test');
     const radioMain = document.getElementById('dev-net-main');
     const badgeNetwork = document.getElementById('badge-network-display');
+    const headerNetworkName = document.getElementById('header-network-name');
+    const heroNetworkText = document.getElementById('hero-network-text');
+    const headerNetworkBadge = document.getElementById('header-network-badge');
 
-    if (!radioTest || !radioMain) return;
-
-    if (config.nimiqNetwork === 'TestAlbatross') {
-        radioTest.checked = true;
-        if (badgeNetwork) badgeNetwork.textContent = 'TestAlbatross';
-    } else {
-        radioMain.checked = true;
-        if (badgeNetwork) badgeNetwork.textContent = 'MainAlbatross';
-    }
-
-    const handleSwitch = (selectedNetwork) => {
-        setNetworkEnvironment(selectedNetwork);
-        if (badgeNetwork) badgeNetwork.textContent = selectedNetwork;
-        updateDeveloperDiagnosticsUI();
-        refreshAllData();
-        showToast(`Developer Mode: Network switched to ${selectedNetwork}`);
+    const updateNetworkBadges = (netName) => {
+        if (badgeNetwork) badgeNetwork.textContent = netName;
+        if (headerNetworkName) headerNetworkName.textContent = netName;
+        if (heroNetworkText) heroNetworkText.textContent = netName;
     };
 
-    radioTest.addEventListener('change', () => handleSwitch('TestAlbatross'));
-    radioMain.addEventListener('change', () => handleSwitch('MainAlbatross'));
+    if (radioTest && radioMain) {
+        if (config.nimiqNetwork === 'TestAlbatross') {
+            radioTest.checked = true;
+        } else {
+            radioMain.checked = true;
+        }
+        updateNetworkBadges(config.nimiqNetwork);
+
+        const handleSwitch = (selectedNetwork) => {
+            setNetworkEnvironment(selectedNetwork);
+            updateNetworkBadges(selectedNetwork);
+            updateDeveloperDiagnosticsUI();
+            refreshAllData();
+            showToast(`Network switched to ${selectedNetwork}`);
+        };
+
+        radioTest.addEventListener('change', () => handleSwitch('TestAlbatross'));
+        radioMain.addEventListener('change', () => handleSwitch('MainAlbatross'));
+    }
+
+    if (headerNetworkBadge) {
+        headerNetworkBadge.addEventListener('click', () => {
+            const nextNet = config.nimiqNetwork === 'TestAlbatross' ? 'MainAlbatross' : 'TestAlbatross';
+            setNetworkEnvironment(nextNet);
+            if (radioTest && radioMain) {
+                if (nextNet === 'TestAlbatross') radioTest.checked = true;
+                else radioMain.checked = true;
+            }
+            updateNetworkBadges(nextNet);
+            updateDeveloperDiagnosticsUI();
+            refreshAllData();
+            showToast(`Switched network to ${nextNet}`);
+        });
+    }
 
     updateDeveloperDiagnosticsUI();
 }
@@ -405,8 +428,12 @@ async function updateDeveloperDiagnosticsUI() {
     const statusEl = document.getElementById('dev-rpc-status');
     const consensusEl = document.getElementById('dev-consensus-status');
     const blockEl = document.getElementById('dev-block-height');
+    const headerNetworkName = document.getElementById('header-network-name');
+    const heroNetworkText = document.getElementById('hero-network-text');
 
     if (chainEl) chainEl.textContent = config.nimiqNetwork;
+    if (headerNetworkName) headerNetworkName.textContent = config.nimiqNetwork;
+    if (heroNetworkText) heroNetworkText.textContent = config.nimiqNetwork;
 
     try {
         const [blockHeight, consensus] = await Promise.all([

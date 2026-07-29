@@ -1,10 +1,16 @@
 import HubApi from '@nimiq/hub-api';
+import { config } from './config.js';
 
-let hubApi = null;
-try {
-    hubApi = new HubApi('https://hub.nimiq.com');
-} catch (err) {
-    console.warn('HubApi note:', err);
+function getHubApiInstance() {
+    const hubUrl = config.nimiqNetwork === 'TestAlbatross' 
+        ? 'https://hub.nimiq-testnet.com' 
+        : 'https://hub.nimiq.com';
+    try {
+        return new HubApi(hubUrl);
+    } catch (err) {
+        console.warn('HubApi initialization note:', err);
+        return null;
+    }
 }
 
 export async function getNativeNimiqProvider() {
@@ -16,6 +22,8 @@ export async function getNativeNimiqProvider() {
             console.warn('window.nimiqPay.init():', err);
         }
     }
+
+    const hubApi = getHubApiInstance();
 
     return {
         listAccounts: async () => {
