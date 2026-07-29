@@ -18,7 +18,7 @@ const TRANSLATIONS = {
         mini_app_subtitle: 'Smart Crypto Payments, Simplified.',
         splash_initializing: 'Initializing Native Mini App SDK...',
         device_verified: 'Trusted Device',
-        mainnet_live: 'Nimiq Mainnet Live',
+        mainnet_live: 'Nimiq Testnet Live',
         connect: 'Connect with Nimiq Pay',
         total_balance: 'Total Balance (USD)',
         not_connected: 'Not Connected',
@@ -32,7 +32,7 @@ const TRANSLATIONS = {
         smart_invoice: 'AI Smart Invoice Generator',
         recent_activity: 'Recent Activity',
         view_all: 'View All',
-        connect_prompt: 'Connect with Nimiq Pay to load transactions.',
+        connect_prompt: 'Connect with Nimiq Pay to load testnet transactions.',
         history: 'History',
         all: 'All',
         sent: 'Sent',
@@ -49,7 +49,7 @@ const TRANSLATIONS = {
         mini_app_subtitle: 'Intelligente Krypto-Zahlungen, Vereinfacht.',
         splash_initializing: 'Native Mini App SDK wird initialisiert...',
         device_verified: 'Vertrauenswürdiges Gerät',
-        mainnet_live: 'Nimiq Mainnet Live',
+        mainnet_live: 'Nimiq Testnet Live',
         connect: 'Mit Nimiq Pay verbinden',
         total_balance: 'Gesamtguthaben (USD)',
         not_connected: 'Nicht verbunden',
@@ -63,7 +63,7 @@ const TRANSLATIONS = {
         smart_invoice: 'KI-Rechnungsgenerator',
         recent_activity: 'Letzte Aktivitäten',
         view_all: 'Alle anzeigen',
-        connect_prompt: 'Mit Nimiq Pay verbinden, um Transaktionen zu laden.',
+        connect_prompt: 'Mit Nimiq Pay verbinden, um Testnet-Transaktionen zu laden.',
         history: 'Verlauf',
         all: 'Alle',
         sent: 'Gesendet',
@@ -80,7 +80,7 @@ const TRANSLATIONS = {
         mini_app_subtitle: 'Pagos Cripto Inteligentes, Simplificados.',
         splash_initializing: 'Inicializando Native Mini App SDK...',
         device_verified: 'Dispositivo de Confianza',
-        mainnet_live: 'Nimiq Mainnet en Vivo',
+        mainnet_live: 'Nimiq Testnet en Vivo',
         connect: 'Conectar con Nimiq Pay',
         total_balance: 'Saldo Total (USD)',
         not_connected: 'No conectado',
@@ -94,7 +94,7 @@ const TRANSLATIONS = {
         smart_invoice: 'Generador de Facturas IA',
         recent_activity: 'Actividad Reciente',
         view_all: 'Ver Todo',
-        connect_prompt: 'Conéctese con Nimiq Pay para cargar transacciones.',
+        connect_prompt: 'Conéctese con Nimiq Pay para cargar transacciones de testnet.',
         history: 'Historial',
         all: 'Todo',
         sent: 'Enviado',
@@ -124,6 +124,26 @@ let state = {
     lastSignature: '',
     lastGeneratedRequestUrl: ''
 };
+
+// ==========================================
+// TESTNET FAUCET CONTROLLER
+// ==========================================
+function openTestnetFaucet() {
+    if (state.address) {
+        const clean = state.address.replace(/\s+/g, '');
+        navigator.clipboard.writeText(clean);
+        showToast('Nimiq address copied! Opening Testnet Faucet...');
+    } else {
+        showToast('Opening Nimiq Testnet Faucet...');
+    }
+    window.open(config.faucetUrl, '_blank');
+}
+
+function setupFaucetTriggers() {
+    document.getElementById('btn-hero-claim-faucet')?.addEventListener('click', openTestnetFaucet);
+    document.getElementById('btn-open-testnet-faucet')?.addEventListener('click', openTestnetFaucet);
+    document.getElementById('btn-receive-modal-faucet')?.addEventListener('click', openTestnetFaucet);
+}
 
 // ==========================================
 // DEVELOPER MODE CONTROLLER
@@ -1088,6 +1108,7 @@ function setupModalTriggers() {
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
     document.getElementById('btn-close-request-pay')?.addEventListener('click', () => closeModal('modal-request-pay'));
+    document.getElementById('btn-close-[#invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
 
@@ -1133,6 +1154,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await requestDeviceIdentifier();
     setupNavigation();
     setupModalTriggers();
+    setupFaucetTriggers();
     setupDeveloperMode();
     setupSendModal();
     setupRequestPaymentModal();

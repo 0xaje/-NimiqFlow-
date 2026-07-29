@@ -29,7 +29,7 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-D34FxLcO.js"></script>
+  <script type="module" crossorigin src="/assets/index-BZdkBk3b.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-OdQ7wZ4g.css">
 </head>
 <body class="bg-[#0d0f0f] text-[#e2e2e2] min-h-screen pb-24">
@@ -113,8 +113,11 @@
                             </p>
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="flex flex-col items-end gap-1">
                         <span id="badge-network-display" class="text-[10px] text-emerald-300 font-semibold uppercase bg-emerald-500/20 px-2 py-0.5 rounded-full">TestAlbatross</span>
+                        <button id="btn-hero-claim-faucet" class="text-[10px] bg-[#f6a623] text-[#462b00] font-bold px-2.5 py-0.5 rounded-md hover:opacity-90 transition-all flex items-center gap-1 shadow-sm active:scale-95">
+                            <span class="material-symbols-outlined text-xs">water_drop</span> Get Free Test NIM
+                        </button>
                     </div>
                 </div>
             </section>
@@ -170,7 +173,7 @@
                 <div id="activity-list-container" class="flex flex-col gap-2.5">
                     <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                         <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">link_off</span>
-                        <p data-i18n="connect_prompt">Connect with Nimiq Pay to load mainnet transactions.</p>
+                        <p data-i18n="connect_prompt">Connect with Nimiq Pay to load testnet transactions.</p>
                     </div>
                 </div>
             </section>
@@ -280,21 +283,21 @@
                 </button>
             </section>
 
-            <!-- DEVELOPER MODE SECTION -->
+            <!-- DEVELOPER MODE & TESTNET FAUCET SECTION -->
             <section class="glass-card rounded-2xl p-5 border border-sky-500/30 flex flex-col gap-3">
                 <div class="flex items-center justify-between border-b border-white/10 pb-2">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-sky-400 text-lg">terminal</span>
                         <h3 class="text-xs font-bold text-white uppercase tracking-wider">Developer Environment</h3>
                     </div>
-                    <span class="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-2.5 py-0.5 rounded-full uppercase">NETWORK SWITCH</span>
+                    <span class="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-2.5 py-0.5 rounded-full uppercase">TESTNET FAUCET ENABLED</span>
                 </div>
 
                 <div class="flex flex-col gap-2">
-                    <label class="text-xs font-bold text-white">Select Environment Network</label>
+                    <label class="text-xs font-bold text-white">Select Network Environment</label>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                            <input type="radio" name="dev-network" value="TestAlbatross" id="dev-net-test" class="text-[#f6a623] focus:ring-0"/>
+                            <input type="radio" name="dev-network" value="TestAlbatross" id="dev-net-test" class="text-[#f6a623] focus:ring-0" checked/>
                             <span class="text-xs font-bold text-white">TestAlbatross</span>
                         </label>
                         <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
@@ -302,6 +305,21 @@
                             <span class="text-xs font-bold text-white">MainAlbatross</span>
                         </label>
                     </div>
+                </div>
+
+                <!-- Testnet Faucet Claim Card -->
+                <div class="p-3 bg-sky-500/10 border border-sky-500/30 rounded-xl flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-sky-400 text-xl">water_drop</span>
+                        <div>
+                            <span class="text-xs font-bold text-white block">Free Test NIM Faucet</span>
+                            <span class="text-[10px] text-[#d7c3ae] block">Get free test tokens for TestAlbatross</span>
+                        </div>
+                    </div>
+                    <button id="btn-open-testnet-faucet" class="px-3 py-1.5 bg-sky-500 text-slate-950 font-bold text-xs rounded-lg hover:bg-sky-400 transition-colors flex items-center gap-1 shadow-md active:scale-95">
+                        <span>Get Test NIM</span>
+                        <span class="material-symbols-outlined text-sm">open_in_new</span>
+                    </button>
                 </div>
 
                 <!-- Network Diagnostics Summary -->
@@ -533,6 +551,18 @@
                     <span class="text-xs text-[#d7c3ae]">Your Nimiq Address:</span>
                     <span id="receive-display-address" class="text-xs font-mono text-[#ffc982] font-semibold mt-1 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 break-all select-all">Please connect wallet</span>
                 </div>
+            </div>
+
+            <!-- Faucet Button in Receive Modal -->
+            <div class="p-3 bg-sky-500/10 border border-sky-500/30 rounded-2xl flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sky-400 text-lg">water_drop</span>
+                    <span class="text-xs font-bold text-white">Need Test NIM?</span>
+                </div>
+                <button id="btn-receive-modal-faucet" class="px-3 py-1.5 bg-sky-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-sky-400 transition-colors flex items-center gap-1 shadow-md">
+                    <span>Claim Faucet</span>
+                    <span class="material-symbols-outlined text-sm">open_in_new</span>
+                </button>
             </div>
 
             <button id="btn-copy-receive-address" class="w-full bg-[#f6a623] text-[#462b00] font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
