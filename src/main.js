@@ -19,12 +19,12 @@ let state = {
     sendAmountStr: '0'
 };
 
-// Initialize Nimiq Hub API natively
+// Initialize Mini App SDK (using Nimiq Hub API protocol)
 let hubApi = null;
 try {
     hubApi = new HubApi('https://hub.nimiq.com');
 } catch (err) {
-    console.warn('Nimiq HubApi init note:', err);
+    console.warn('Mini App SDK init note:', err);
 }
 
 // ==========================================
@@ -92,20 +92,20 @@ function showToast(message) {
 }
 
 // ==========================================
-// NATIVE NIMIQ HUB WALLET CONNECTOR
+// NATIVE NIMIQ PAY MINI APP CONNECTOR
 // ==========================================
-async function connectNimiqHubWallet() {
+async function connectWithNimiqPay() {
     if (hubApi) {
         try {
             const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
             if (res && res.address) {
                 setAddress(res.address);
-                showToast(`Connected Nimiq Hub: ${formatNimiqAddress(res.address)}`);
+                showToast(`Connected with Nimiq Pay: ${formatNimiqAddress(res.address)}`);
             }
         } catch (err) {
-            console.warn('Hub chooseAddress note:', err);
+            console.warn('Mini App SDK chooseAddress note:', err);
             hubApi.login({ appName: 'KorriPay' }).catch(() => {
-                showToast('Wallet selection cancelled or closed');
+                showToast('Nimiq Pay connection cancelled or closed');
             });
         }
     } else {
@@ -131,7 +131,7 @@ function disconnectWallet() {
     localStorage.removeItem('korripay_address');
     updateBalanceDisplay();
     renderTransactions();
-    showToast('Nimiq Hub session disconnected.');
+    showToast('Nimiq Pay session disconnected.');
 }
 
 // ==========================================
@@ -246,13 +246,13 @@ function updateBalanceDisplay() {
         if (addrEl) addrEl.textContent = 'Not Connected';
         if (nimEl) nimEl.textContent = '0.00';
         if (usdEl) usdEl.textContent = '$0.00';
-        if (receiveAddrEl) receiveAddrEl.textContent = 'Please connect wallet';
+        if (receiveAddrEl) receiveAddrEl.textContent = 'Connect with Nimiq Pay';
         if (sendModalBalance) sendModalBalance.textContent = '0.00 NIM';
         if (profAddr) profAddr.textContent = 'Not Connected';
         if (profNet) profNet.textContent = '$0.00';
         if (profHoldings) profHoldings.textContent = '0.00 NIM';
         if (connectBanner) connectBanner.classList.remove('hidden');
-        if (btnConnectLabel) btnConnectLabel.textContent = 'Connect Hub';
+        if (btnConnectLabel) btnConnectLabel.textContent = 'Connect with Nimiq Pay';
         return;
     }
 
@@ -284,7 +284,7 @@ function renderTransactions() {
         const emptyHtml = `
             <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">link_off</span>
-                <p>Connect Nimiq Hub to load mainnet transactions.</p>
+                <p>Connect with Nimiq Pay to load mainnet transactions.</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -489,7 +489,7 @@ function setupSendModal() {
                     value: luna,
                     extraData: message
                 }).catch(err => {
-                    console.warn('Hub Api checkout launch:', err);
+                    console.warn('Mini App SDK checkout launch:', err);
                     window.open(`https://hub.nimiq.com/checkout?recipient=${recipient}&value=${luna}&message=${encodeURIComponent(message)}`, '_blank');
                 });
             } else {
@@ -743,8 +743,8 @@ function closeModal(id) {
 }
 
 function setupModalTriggers() {
-    document.getElementById('btn-connect-hub')?.addEventListener('click', connectNimiqHubWallet);
-    document.getElementById('btn-banner-connect')?.addEventListener('click', connectNimiqHubWallet);
+    document.getElementById('btn-connect-hub')?.addEventListener('click', connectWithNimiqPay);
+    document.getElementById('btn-banner-connect')?.addEventListener('click', connectWithNimiqPay);
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
@@ -758,7 +758,7 @@ function setupModalTriggers() {
 
     const doCopy = () => {
         if (!state.address) {
-            showToast('Please connect your Nimiq Hub wallet first');
+            showToast('Please connect with Nimiq Pay first');
             return;
         }
         navigator.clipboard.writeText(state.address.replace(/\s+/g, ''));
