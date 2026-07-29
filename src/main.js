@@ -19,7 +19,7 @@ let state = {
     sendAmountStr: '0'
 };
 
-// Initialize Nimiq Hub API
+// Initialize Nimiq Hub API natively
 let hubApi = null;
 try {
     hubApi = new HubApi('https://hub.nimiq.com');
@@ -37,45 +37,17 @@ function initSplashScreen() {
 
     setTimeout(() => {
         if (progressBar) progressBar.style.width = '100%';
-    }, 150);
+    }, 100);
 
     const dismissSplash = () => {
         splash.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
             if (splash.parentNode) splash.parentNode.removeChild(splash);
-        }, 700);
+        }, 500);
     };
 
-    setTimeout(dismissSplash, 1500);
+    setTimeout(dismissSplash, 1100);
     splash.addEventListener('click', dismissSplash);
-}
-
-// ==========================================
-// HERO CARD 3D TILT EFFECT
-// ==========================================
-function initHeroTilt() {
-    const hero = document.getElementById('hero-balance-card');
-    if (!hero) return;
-
-    hero.addEventListener('mousemove', (e) => {
-        const rect = hero.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const moveX = (x - centerX) / 25;
-        const moveY = (y - centerY) / 25;
-        hero.style.transform = `perspective(1000px) rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
-    });
-
-    hero.addEventListener('mouseleave', () => {
-        hero.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg)`;
-        hero.style.transition = 'transform 0.5s ease';
-    });
-
-    hero.addEventListener('mouseenter', () => {
-        hero.style.transition = 'none';
-    });
 }
 
 // ==========================================
@@ -120,15 +92,15 @@ function showToast(message) {
 }
 
 // ==========================================
-// WALLET PROVIDER CONNECTORS & LOGOUT
+// NATIVE NIMIQ HUB WALLET CONNECTOR
 // ==========================================
-async function connectNimiqWallet() {
+async function connectNimiqHubWallet() {
     if (hubApi) {
         try {
             const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
             if (res && res.address) {
                 setAddress(res.address);
-                showToast(`Connected Nimiq wallet: ${formatNimiqAddress(res.address)}`);
+                showToast(`Connected Nimiq Hub: ${formatNimiqAddress(res.address)}`);
             }
         } catch (err) {
             console.warn('Hub chooseAddress note:', err);
@@ -137,69 +109,8 @@ async function connectNimiqWallet() {
             });
         }
     } else {
-        openModal('tab-content-profile');
-    }
-}
-
-async function connectMetaMask() {
-    if (typeof window.ethereum !== 'undefined') {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            if (accounts && accounts[0]) {
-                showToast(`MetaMask connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
-                const addr = prompt('MetaMask connected! Enter your Nimiq payout address:');
-                if (addr) setAddress(addr);
-            }
-        } catch (err) {
-            showToast('MetaMask connection rejected');
-        }
-    } else {
-        showToast('MetaMask extension not found in browser');
-    }
-}
-
-async function connectPhantom() {
-    if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-        try {
-            const res = await window.solana.connect();
-            if (res && res.publicKey) {
-                const pubKey = res.publicKey.toString();
-                showToast(`Phantom connected: ${pubKey.slice(0, 6)}...${pubKey.slice(-4)}`);
-                const addr = prompt('Phantom connected! Enter your Nimiq payout address:');
-                if (addr) setAddress(addr);
-            }
-        } catch (err) {
-            showToast('Phantom connection rejected');
-        }
-    } else {
-        showToast('Phantom wallet extension not found in browser');
-    }
-}
-
-function setupWalletConnectModal() {
-    const btnClose = document.getElementById('btn-close-wallet-modal');
-    const btnConfirm = document.getElementById('btn-confirm-wallet-connect');
-
-    if (btnClose) {
-        btnClose.addEventListener('click', () => closeModal('modal-wallet-connect'));
-    }
-
-    if (btnConfirm) {
-        btnConfirm.addEventListener('click', async () => {
-            const selected = document.querySelector('input[name="wallet-provider"]:checked')?.value;
-            closeModal('modal-wallet-connect');
-
-            if (selected === 'nimiq') {
-                await connectNimiqWallet();
-            } else if (selected === 'metamask') {
-                await connectMetaMask();
-            } else if (selected === 'phantom') {
-                await connectPhantom();
-            } else if (selected === 'manual') {
-                const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
-                if (addr) setAddress(addr);
-            }
-        });
+        const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
+        if (addr) setAddress(addr);
     }
 }
 
@@ -220,11 +131,11 @@ function disconnectWallet() {
     localStorage.removeItem('korripay_address');
     updateBalanceDisplay();
     renderTransactions();
-    showToast('Wallet disconnected successfully.');
+    showToast('Nimiq Hub session disconnected.');
 }
 
 // ==========================================
-// REAL BLOCKCHAIN & API INTEGRATION
+// REAL BLOCKCHAIN RPC & API INTEGRATION
 // ==========================================
 async function fetchExchangeRate() {
     try {
@@ -301,17 +212,12 @@ async function fetchNimiqTransactions() {
 
 async function refreshAllData() {
     state.isLoading = true;
-    const refreshBtn = document.getElementById('btn-refresh-data');
-    if (refreshBtn) refreshBtn.classList.add('opacity-50', 'pointer-events-none');
-    
     await Promise.all([
         fetchExchangeRate(),
         fetchNimiqAccount(),
         fetchNimiqTransactions()
     ]);
-
     state.isLoading = false;
-    if (refreshBtn) refreshBtn.classList.remove('opacity-50', 'pointer-events-none');
 }
 
 // ==========================================
@@ -319,10 +225,7 @@ async function refreshAllData() {
 // ==========================================
 function updateRateDisplay() {
     const rateEl = document.getElementById('display-nim-rate');
-    const showcaseRate = document.getElementById('showcase-rate');
-    const formatted = `$${state.usdRate.toFixed(5)}`;
-    if (rateEl) rateEl.textContent = formatted;
-    if (showcaseRate) showcaseRate.textContent = formatted;
+    if (rateEl) rateEl.textContent = `$${state.usdRate.toFixed(5)}`;
 }
 
 function updateBalanceDisplay() {
@@ -349,7 +252,7 @@ function updateBalanceDisplay() {
         if (profNet) profNet.textContent = '$0.00';
         if (profHoldings) profHoldings.textContent = '0.00 NIM';
         if (connectBanner) connectBanner.classList.remove('hidden');
-        if (btnConnectLabel) btnConnectLabel.textContent = 'Connect Wallet';
+        if (btnConnectLabel) btnConnectLabel.textContent = 'Connect Hub';
         return;
     }
 
@@ -379,9 +282,9 @@ function renderTransactions() {
 
     if (!state.address) {
         const emptyHtml = `
-            <div class="p-6 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
-                <span class="material-symbols-outlined text-2xl text-[#ffc982] mb-1">link_off</span>
-                <p>Connect your Nimiq address to load live mainnet transactions.</p>
+            <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
+                <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">link_off</span>
+                <p>Connect Nimiq Hub to load mainnet transactions.</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -391,9 +294,9 @@ function renderTransactions() {
 
     if (state.transactions.length === 0) {
         const emptyHtml = `
-            <div class="p-6 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
-                <span class="material-symbols-outlined text-2xl text-[#ffc982] mb-1">history</span>
-                <p>No transactions recorded on mainnet for address ${state.address.slice(0, 9)}...</p>
+            <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
+                <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">history</span>
+                <p>No mainnet transactions found for address ${state.address.slice(0, 9)}...</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -402,7 +305,6 @@ function renderTransactions() {
     }
 
     const cleanAddress = state.address.replace(/\s+/g, '').toUpperCase();
-
     let totalVolumeLuna = 0;
 
     const filteredTxList = state.transactions.filter(tx => {
@@ -430,25 +332,25 @@ function renderTransactions() {
         const signStr = isIncoming ? '+' : '-';
 
         return `
-            <div class="flex items-center justify-between p-4 glass-card rounded-2xl hover:bg-white/10 transition-all cursor-pointer group">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 ${colorClass}">
-                        <span class="material-symbols-outlined text-lg">${iconName}</span>
+            <div class="flex items-center justify-between p-3.5 glass-card rounded-2xl hover:bg-white/10 transition-all cursor-pointer group">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center border border-white/10 ${colorClass}">
+                        <span class="material-symbols-outlined text-base">${iconName}</span>
                     </div>
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-white group-hover:text-[#ffc982] transition-colors">
                             ${isIncoming ? 'Received Payment' : 'Sent Payment'}
                         </span>
-                        <span class="text-[11px] text-[#d7c3ae]">${formatDate(tx.timestamp)}</span>
+                        <span class="text-[10px] text-[#d7c3ae]">${formatDate(tx.timestamp)}</span>
                     </div>
                 </div>
                 <div class="text-right">
                     <span class="block text-xs font-mono font-bold ${colorClass}">
                         ${signStr}${formatNIM(valNim)} NIM
                     </span>
-                    <a href="https://albatross.nimiqscan.com/transaction/${tx.hash}" target="_blank" rel="noopener" class="text-[10px] text-white/50 hover:text-[#ffc982] flex items-center justify-end gap-0.5">
+                    <a href="https://albatross.nimiqscan.com/transaction/${tx.hash}" target="_blank" rel="noopener" class="text-[9px] text-white/50 hover:text-[#ffc982] flex items-center justify-end gap-0.5">
                         <span>Block #${tx.blockNumber}</span>
-                        <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+                        <span class="material-symbols-outlined text-[9px]">open_in_new</span>
                     </a>
                 </div>
             </div>
@@ -460,7 +362,7 @@ function renderTransactions() {
     if (fullContainer) {
         if (filteredTxList.length === 0) {
             fullContainer.innerHTML = `
-                <div class="p-6 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
+                <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                     <p>No ${state.historyFilter} transactions found.</p>
                 </div>
             `;
@@ -479,15 +381,15 @@ function setupHistoryFilterButtons() {
         state.historyFilter = activeFilter;
         [btnAll, btnSent, btnRec].forEach(btn => {
             if (!btn) return;
-            btn.className = 'px-6 py-2.5 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10';
+            btn.className = 'px-5 py-2 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10';
         });
 
         if (activeFilter === 'all' && btnAll) {
-            btnAll.className = 'px-6 py-2.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
+            btnAll.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
         } else if (activeFilter === 'sent' && btnSent) {
-            btnSent.className = 'px-6 py-2.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
+            btnSent.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
         } else if (activeFilter === 'received' && btnRec) {
-            btnRec.className = 'px-6 py-2.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
+            btnRec.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
         }
 
         renderTransactions();
@@ -502,7 +404,7 @@ function renderReceiveQRCode() {
     const canvas = document.getElementById('receive-qr-canvas');
     if (!canvas || !state.address) return;
     const uri = `nimiq:${state.address.replace(/\s+/g, '')}`;
-    QRCode.toCanvas(canvas, uri, { width: 180, margin: 1 }, (err) => {
+    QRCode.toCanvas(canvas, uri, { width: 170, margin: 1 }, (err) => {
         if (err) console.error('QR error:', err);
     });
 }
@@ -760,86 +662,7 @@ function setupInvoiceBuilder() {
 }
 
 // ==========================================
-// WEBGL SHADER BACKGROUND ANIMATION
-// ==========================================
-function initShaderCanvas() {
-    const canvas = document.getElementById('shader-canvas');
-    if (!canvas) return;
-
-    function resizeCanvas() {
-        const width = canvas.parentElement ? canvas.parentElement.clientWidth : 300;
-        const height = canvas.parentElement ? canvas.parentElement.clientHeight : 200;
-        canvas.width = width;
-        canvas.height = height;
-    }
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return;
-
-    const vs = `
-        attribute vec2 a_position;
-        varying vec2 v_texCoord;
-        void main() {
-            v_texCoord = a_position * 0.5 + 0.5;
-            gl_Position = vec4(a_position, 0.0, 1.0);
-        }
-    `;
-
-    const fs = `
-        precision highp float;
-        varying vec2 v_texCoord;
-        uniform float u_time;
-        
-        void main() {
-            vec2 uv = v_texCoord;
-            float dist = distance(uv, vec2(0.5));
-            float ring = sin(dist * 18.0 - u_time * 3.0);
-            ring = step(0.94, ring);
-            
-            vec3 color = vec3(1.0, 0.78, 0.51);
-            float alpha = ring * (1.0 - dist * 1.4) * 0.45;
-            
-            gl_FragColor = vec4(color, alpha);
-        }
-    `;
-
-    function compileShader(type, src) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, src);
-        gl.compileShader(shader);
-        return shader;
-    }
-
-    const program = gl.createProgram();
-    gl.attachShader(program, compileShader(gl.VERTEX_SHADER, vs));
-    gl.attachShader(program, compileShader(gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(program);
-    gl.useProgram(program);
-
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-
-    const pos = gl.getAttribLocation(program, 'a_position');
-    gl.enableVertexAttribArray(pos);
-    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-
-    const uTime = gl.getUniformLocation(program, 'u_time');
-
-    function renderFrame(time) {
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        if (uTime) gl.uniform1f(uTime, time * 0.001);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        requestAnimationFrame(renderFrame);
-    }
-    requestAnimationFrame(renderFrame);
-}
-
-// ==========================================
-// NAVIGATION & UNIFIED CONTROLLERS
+// NAVIGATION CONTROLLER
 // ==========================================
 function setupNavigation() {
     const tabs = {
@@ -854,14 +677,6 @@ function setupNavigation() {
         'invoice': document.getElementById('nav-btn-invoice'),
         'history': document.getElementById('nav-btn-history'),
         'profile': document.getElementById('nav-btn-profile')
-    };
-
-    const navBtnsDesktop = {
-        'home': document.getElementById('desktop-nav-home'),
-        'pay': document.getElementById('desktop-nav-pay'),
-        'invoice': document.getElementById('desktop-nav-invoice'),
-        'history': document.getElementById('desktop-nav-history'),
-        'profile': document.getElementById('desktop-nav-profile')
     };
 
     function switchTab(target) {
@@ -889,7 +704,6 @@ function setupNavigation() {
             }
         });
 
-        // Mobile Nav UI
         Object.keys(navBtnsMobile).forEach(key => {
             if (navBtnsMobile[key]) {
                 if (key === target) {
@@ -901,28 +715,11 @@ function setupNavigation() {
                 }
             }
         });
-
-        // Desktop Nav UI
-        Object.keys(navBtnsDesktop).forEach(key => {
-            if (navBtnsDesktop[key]) {
-                if (key === target) {
-                    navBtnsDesktop[key].className = 'desktop-nav-btn px-5 py-2 rounded-full text-xs font-bold text-[#ffc982] bg-[#f6a623]/15 border border-[#f6a623]/30 transition-all';
-                } else {
-                    navBtnsDesktop[key].className = 'desktop-nav-btn px-5 py-2 rounded-full text-xs font-semibold text-[#d7c3ae] hover:text-white transition-all';
-                }
-            }
-        });
     }
 
     Object.keys(navBtnsMobile).forEach(key => {
         if (navBtnsMobile[key]) {
             navBtnsMobile[key].addEventListener('click', () => switchTab(key));
-        }
-    });
-
-    Object.keys(navBtnsDesktop).forEach(key => {
-        if (navBtnsDesktop[key]) {
-            navBtnsDesktop[key].addEventListener('click', () => switchTab(key));
         }
     });
 
@@ -946,11 +743,8 @@ function closeModal(id) {
 }
 
 function setupModalTriggers() {
-    const openConnectModal = () => openModal('modal-wallet-connect');
-
-    document.getElementById('btn-connect-hub')?.addEventListener('click', openConnectModal);
-    document.getElementById('btn-banner-connect')?.addEventListener('click', openConnectModal);
-    document.getElementById('btn-profile-connected-wallets')?.addEventListener('click', openConnectModal);
+    document.getElementById('btn-connect-hub')?.addEventListener('click', connectNimiqHubWallet);
+    document.getElementById('btn-banner-connect')?.addEventListener('click', connectNimiqHubWallet);
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
@@ -964,7 +758,7 @@ function setupModalTriggers() {
 
     const doCopy = () => {
         if (!state.address) {
-            showToast('Please connect your Nimiq wallet first');
+            showToast('Please connect your Nimiq Hub wallet first');
             return;
         }
         navigator.clipboard.writeText(state.address.replace(/\s+/g, ''));
@@ -974,21 +768,6 @@ function setupModalTriggers() {
     document.getElementById('btn-copy-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-profile-copy-addr')?.addEventListener('click', doCopy);
-
-    document.getElementById('btn-refresh-data')?.addEventListener('click', refreshAllData);
-
-    const btnSaveAddr = document.getElementById('btn-save-custom-address');
-    const inputCustomAddr = document.getElementById('input-custom-address');
-
-    if (btnSaveAddr && inputCustomAddr) {
-        btnSaveAddr.addEventListener('click', () => {
-            const raw = inputCustomAddr.value.trim();
-            if (raw) {
-                setAddress(raw);
-                showToast('Nimiq address updated successfully!');
-            }
-        });
-    }
 
     const openExplorer = () => {
         if (!state.address) {
@@ -1006,10 +785,6 @@ function setupModalTriggers() {
     document.getElementById('btn-notifications')?.addEventListener('click', () => {
         showToast('Connected to Nimiq Mainnet via RPC node.');
     });
-
-    document.getElementById('btn-profile-notifications')?.addEventListener('click', () => {
-        showToast('Connected to Nimiq Mainnet via RPC node.');
-    });
 }
 
 // ==========================================
@@ -1017,11 +792,8 @@ function setupModalTriggers() {
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     initSplashScreen();
-    initHeroTilt();
-    initShaderCanvas();
     setupNavigation();
     setupModalTriggers();
-    setupWalletConnectModal();
     setupSendModal();
     setupInvoiceBuilder();
     setupHistoryFilterButtons();
