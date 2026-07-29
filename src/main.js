@@ -1,13 +1,18 @@
 import QRCode from 'qrcode';
-import HubApi from '@nimiq/hub-api';
+import { config, setNetworkEnvironment } from './services/config.js';
+import { fetchNimiqUsdPrice } from './services/prices.js';
+import { getAccountExplorerUrl, getTransactionExplorerUrl } from './services/explorer.js';
+import { 
+    fetchRpcAccountBalance, 
+    fetchRpcTransactions, 
+    fetchRpcBlockNumber, 
+    fetchRpcConsensusStatus 
+} from './services/rpc.js';
+import { getNativeNimiqProvider } from './services/wallet.js';
 
 // ==========================================
-// REAL PRODUCTION BLOCKCHAIN & API ENDPOINTS
+// STATE & TRANSLATIONS
 // ==========================================
-const RPC_ENDPOINT = 'https://rpc.nimiqwatch.com';
-const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2&vs_currencies=usd';
-
-// Internationalization (i18n) Dictionary
 const TRANSLATIONS = {
     en: {
         mini_app_subtitle: 'Smart Crypto Payments, Simplified.',
@@ -27,7 +32,7 @@ const TRANSLATIONS = {
         smart_invoice: 'AI Smart Invoice Generator',
         recent_activity: 'Recent Activity',
         view_all: 'View All',
-        connect_prompt: 'Connect with Nimiq Pay to load mainnet transactions.',
+        connect_prompt: 'Connect with Nimiq Pay to load transactions.',
         history: 'History',
         all: 'All',
         sent: 'Sent',
@@ -120,52 +125,69 @@ let state = {
     lastGeneratedRequestUrl: ''
 };
 
-// Real Nimiq HubApi Protocol Bridge
-let hubApi = null;
-try {
-    hubApi = new HubApi('https://hub.nimiq.com');
-} catch (err) {
-    console.warn('HubApi initialization:', err);
-}
+// ==========================================
+// DEVELOPER MODE CONTROLLER
+// ==========================================
+function setupDeveloperMode() {
+    const radioTest = document.getElementById('dev-net-test');
+    const radioMain = document.getElementById('dev-net-main');
+    const badgeNetwork = document.getElementById('badge-network-display');
 
-// ==========================================
-// REAL NATIVE MINI APP SDK PROVIDER
-// ==========================================
-async function getNativeNimiqProvider() {
-    if (window.nimiqPay && typeof window.nimiqPay.init === 'function') {
-        try {
-            const nimiq = await window.nimiqPay.init();
-            return nimiq;
-        } catch (err) {
-            console.warn('window.nimiqPay.init():', err);
-        }
+    if (!radioTest || !radioMain) return;
+
+    if (config.nimiqNetwork === 'TestAlbatross') {
+        radioTest.checked = true;
+        if (badgeNetwork) badgeNetwork.textContent = 'TestAlbatross';
+    } else {
+        radioMain.checked = true;
+        if (badgeNetwork) badgeNetwork.textContent = 'MainAlbatross';
     }
 
-    return {
-        listAccounts: async () => {
-            if (hubApi) {
-                const res = await hubApi.chooseAddress({ appName: 'Nimiq Flow' });
-                return res && res.address ? [{ address: res.address, label: 'Nimiq Flow Account' }] : [];
-            }
-            return [];
-        },
-        sendTransaction: async (params) => {
-            if (hubApi) {
-                return await hubApi.checkout(params);
-            }
-        },
-        signMessage: async (msg) => {
-            if (hubApi) {
-                return await hubApi.signMessage({
-                    appName: 'Nimiq Flow',
-                    message: msg
-                });
-            }
-            return null;
-        }
+    const handleSwitch = (selectedNetwork) => {
+        setNetworkEnvironment(selectedNetwork);
+        if (badgeNetwork) badgeNetwork.textContent = selectedNetwork;
+        updateDeveloperDiagnosticsUI();
+        refreshAllData();
+        showToast(`Developer Mode: Network switched to ${selectedNetwork}`);
     };
+
+    radioTest.addEventListener('change', () => handleSwitch('TestAlbatross'));
+    radioMain.addEventListener('change', () => handleSwitch('MainAlbatross'));
+
+    updateDeveloperDiagnosticsUI();
 }
 
+async function updateDeveloperDiagnosticsUI() {
+    const chainEl = document.getElementById('dev-chain-name');
+    const statusEl = document.getElementById('dev-rpc-status');
+    const consensusEl = document.getElementById('dev-consensus-status');
+    const blockEl = document.getElementById('dev-block-height');
+
+    if (chainEl) chainEl.textContent = config.nimiqNetwork;
+
+    try {
+        const [blockHeight, consensus] = await Promise.all([
+            fetchRpcBlockNumber(),
+            fetchRpcConsensusStatus()
+        ]);
+
+        if (statusEl) {
+            statusEl.className = 'text-emerald-400 font-bold flex items-center gap-1';
+            statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Connected';
+        }
+        if (consensusEl) consensusEl.textContent = consensus;
+        if (blockEl) blockEl.textContent = `#${blockHeight.toLocaleString()}`;
+    } catch {
+        if (statusEl) {
+            statusEl.className = 'text-red-400 font-bold';
+            statusEl.textContent = 'Disconnected';
+        }
+    }
+}
+
+// ==========================================
+// WALLET CONNECT
+// ==========================================
 async function connectWithNimiqPay() {
     try {
         const nimiq = await getNativeNimiqProvider();
@@ -505,87 +527,33 @@ function disconnectWallet() {
 }
 
 // ==========================================
-// REAL COINGECKO MARKET CONVERSION & RPC DATA
+// REAL BLOCKCHAIN DATA REFRESH VIA SERVICES
 // ==========================================
-async function fetchExchangeRate() {
-    try {
-        const response = await fetch(COINGECKO_API);
-        if (response.ok) {
-            const data = await response.json();
-            if (data['nimiq-2'] && data['nimiq-2'].usd) {
-                state.usdRate = data['nimiq-2'].usd;
-                updateRateDisplay();
-            }
-        }
-    } catch (err) {
-        console.warn('CoinGecko API fetch:', err);
-    }
+async function fetchExchangeRateData() {
+    state.usdRate = await fetchNimiqUsdPrice();
+    updateRateDisplay();
 }
 
-async function fetchNimiqAccount() {
+async function fetchNimiqAccountData() {
     if (!state.address) return;
-    try {
-        const payload = {
-            jsonrpc: "2.0",
-            method: "getAccountByAddress",
-            params: [state.address],
-            id: 1
-        };
-
-        const response = await fetch(RPC_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            const json = await response.json();
-            if (json.result && json.result.data) {
-                const rawBalance = json.result.data.balance || 0;
-                state.nimBalance = lunaToNim(rawBalance);
-                state.usdBalance = state.nimBalance * state.usdRate;
-                updateBalanceDisplay();
-            }
-        }
-    } catch (err) {
-        console.error('Nimiq RPC Account Error:', err);
-    }
+    const rawBalance = await fetchRpcAccountBalance(state.address);
+    state.nimBalance = lunaToNim(rawBalance);
+    state.usdBalance = state.nimBalance * state.usdRate;
+    updateBalanceDisplay();
 }
 
-async function fetchNimiqTransactions() {
+async function fetchNimiqTransactionsData() {
     if (!state.address) return;
-    try {
-        const payload = {
-            jsonrpc: "2.0",
-            method: "getTransactionsByAddress",
-            params: [state.address, 25, null],
-            id: 1
-        };
-
-        const response = await fetch(RPC_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            const json = await response.json();
-            if (json.result && Array.isArray(json.result.data)) {
-                state.transactions = json.result.data;
-                renderTransactions();
-            }
-        }
-    } catch (err) {
-        console.error('Nimiq RPC Transactions Error:', err);
-    }
+    state.transactions = await fetchRpcTransactions(state.address);
+    renderTransactions();
 }
 
 async function refreshAllData() {
     state.isLoading = true;
     await Promise.all([
-        fetchExchangeRate(),
-        fetchNimiqAccount(),
-        fetchNimiqTransactions()
+        fetchExchangeRateData(),
+        fetchNimiqAccountData(),
+        fetchNimiqTransactionsData()
     ]);
     state.isLoading = false;
 }
@@ -665,7 +633,7 @@ function renderTransactions() {
         const emptyHtml = `
             <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">history</span>
-                <p>No mainnet transactions found for address ${state.address.slice(0, 9)}...</p>
+                <p>No transactions found for address ${state.address.slice(0, 9)}...</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -699,6 +667,7 @@ function renderTransactions() {
         const iconName = isIncoming ? 'arrow_downward' : 'arrow_upward';
         const colorClass = isIncoming ? 'text-emerald-400' : 'text-amber-400';
         const signStr = isIncoming ? '+' : '-';
+        const explorerUrl = getTransactionExplorerUrl(tx.hash);
 
         return `
             <div class="flex items-center justify-between p-3.5 glass-card rounded-2xl hover:bg-white/10 transition-all cursor-pointer group">
@@ -717,7 +686,7 @@ function renderTransactions() {
                     <span class="block text-xs font-mono font-bold ${colorClass}">
                         ${signStr}${formatNIM(valNim)} NIM
                     </span>
-                    <a href="https://albatross.nimiqscan.com/transaction/${tx.hash}" target="_blank" rel="noopener" class="text-[9px] text-white/50 hover:text-[#ffc982] flex items-center justify-end gap-0.5">
+                    <a href="${explorerUrl}" target="_blank" rel="noopener" class="text-[9px] text-white/50 hover:text-[#ffc982] flex items-center justify-end gap-0.5">
                         <span>Block #${tx.blockNumber}</span>
                         <span class="material-symbols-outlined text-[9px]">open_in_new</span>
                     </a>
@@ -1145,11 +1114,8 @@ function setupModalTriggers() {
     }
 
     const openExplorer = () => {
-        if (!state.address) {
-            window.open('https://albatross.nimiqscan.com', '_blank');
-            return;
-        }
-        window.open(`https://albatross.nimiqscan.com/account/${state.address.replace(/\s+/g, '')}`, '_blank');
+        const url = getAccountExplorerUrl(state.address);
+        window.open(url, '_blank');
     };
 
     document.getElementById('btn-explorer-link')?.addEventListener('click', openExplorer);
@@ -1167,6 +1133,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await requestDeviceIdentifier();
     setupNavigation();
     setupModalTriggers();
+    setupDeveloperMode();
     setupSendModal();
     setupRequestPaymentModal();
     setupInvoiceBuilder();
@@ -1177,6 +1144,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (state.address) {
         refreshAllData();
     } else {
-        fetchExchangeRate();
+        fetchExchangeRateData();
     }
 });

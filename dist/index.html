@@ -29,7 +29,7 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-DFayBpyi.js"></script>
+  <script type="module" crossorigin src="/assets/index-D34FxLcO.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-OdQ7wZ4g.css">
 </head>
 <body class="bg-[#0d0f0f] text-[#e2e2e2] min-h-screen pb-24">
@@ -114,7 +114,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[10px] text-emerald-300 font-semibold uppercase bg-emerald-500/20 px-2 py-0.5 rounded-full">Mainnet</span>
+                        <span id="badge-network-display" class="text-[10px] text-emerald-300 font-semibold uppercase bg-emerald-500/20 px-2 py-0.5 rounded-full">TestAlbatross</span>
                     </div>
                 </div>
             </section>
@@ -257,7 +257,7 @@
                 </div>
             </section>
 
-            <!-- Device Identifier & Verification Panel -->
+            <!-- Trusted Device Identifier Panel -->
             <section class="glass-card rounded-2xl p-4 border border-emerald-500/30 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40">
@@ -280,19 +280,50 @@
                 </button>
             </section>
 
-            <!-- Network Settings -->
-            <section class="glass-card rounded-2xl overflow-hidden border border-white/10 flex flex-col divide-y divide-white/10">
-                <div class="p-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                            <span class="material-symbols-outlined text-lg">security</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-white">Mainnet RPC Node</p>
-                            <p class="text-[11px] font-mono text-emerald-400">https://rpc.nimiqwatch.com</p>
-                        </div>
+            <!-- DEVELOPER MODE SECTION -->
+            <section class="glass-card rounded-2xl p-5 border border-sky-500/30 flex flex-col gap-3">
+                <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sky-400 text-lg">terminal</span>
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Settings → Developer</h3>
                     </div>
-                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full">ACTIVE</span>
+                    <span class="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-2.5 py-0.5 rounded-full uppercase">HACKATHON MODE</span>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold text-white">Developer Mode Network Toggle</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                            <input type="radio" name="dev-network" value="TestAlbatross" id="dev-net-test" class="text-[#f6a623] focus:ring-0"/>
+                            <span class="text-xs font-bold text-white">● TestAlbatross</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                            <input type="radio" name="dev-network" value="MainAlbatross" id="dev-net-main" class="text-[#f6a623] focus:ring-0"/>
+                            <span class="text-xs font-bold text-white">○ MainAlbatross</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Network Diagnostics Summary -->
+                <div class="grid grid-cols-2 gap-2 bg-black/40 p-3 rounded-xl border border-white/10 text-xs font-mono">
+                    <div>
+                        <span class="text-[#d7c3ae] text-[10px] uppercase block">RPC Status</span>
+                        <span id="dev-rpc-status" class="text-emerald-400 font-bold flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Connected
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-[#d7c3ae] text-[10px] uppercase block">Chain</span>
+                        <span id="dev-chain-name" class="text-sky-300 font-bold">TestAlbatross</span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="text-[#d7c3ae] text-[10px] uppercase block">Consensus</span>
+                        <span id="dev-consensus-status" class="text-emerald-400 font-bold">Established</span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="text-[#d7c3ae] text-[10px] uppercase block">Block</span>
+                        <span id="dev-block-height" class="text-[#ffc982] font-bold">#6,421,120</span>
+                    </div>
                 </div>
             </section>
 
