@@ -76,11 +76,18 @@ export async function claimFaucetTokens(address, amount = 10000) {
     return { success: false, message: 'Faucet request dispatched. On-chain confirmation pending.' };
 }
 
+export function formatRpcAddress(addr) {
+    if (!addr) return '';
+    const clean = addr.replace(/\s+/g, '').toUpperCase();
+    if (clean.length !== 36) return addr;
+    return clean.match(/.{1,4}/g).join(' ');
+}
+
 export async function fetchRpcAccountBalance(address) {
     if (!address) return 0;
-    const clean = address.replace(/\s+/g, '');
+    const formattedAddr = formatRpcAddress(address);
 
-    const result = await queryRpc('getAccountByAddress', [clean]);
+    const result = await queryRpc('getAccountByAddress', [formattedAddr]);
     let rpcBalance = 0;
 
     if (result) {
@@ -96,8 +103,8 @@ export async function fetchRpcAccountBalance(address) {
 
 export async function fetchRpcTransactions(address, limit = 25) {
     if (!address) return [];
-    const clean = address.replace(/\s+/g, '');
-    const result = await queryRpc('getTransactionsByAddress', [clean, limit, null]);
+    const formattedAddr = formatRpcAddress(address);
+    const result = await queryRpc('getTransactionsByAddress', [formattedAddr, limit, null]);
     if (result && Array.isArray(result.data)) {
         return result.data;
     }

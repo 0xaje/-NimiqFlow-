@@ -114,17 +114,36 @@ let state = {
     address: localStorage.getItem('nimiqflow_address') || '',
     deviceId: localStorage.getItem('nimiqflow_device_id') || '',
     currentLang: localStorage.getItem('nimiqflow_lang') || getInitialLanguage(),
-    nimBalance: 0,
     usdRate: 0.00047,
-    usdBalance: 0,
-    transactions: [],
     historyFilter: 'all',
     isLoading: false,
     activeTab: 'home',
     sendAmountStr: '0',
     lastSignature: '',
-    lastGeneratedRequestUrl: ''
+    lastGeneratedRequestUrl: '',
+
+    balances: {
+        TestAlbatross: Number(localStorage.getItem('nimiqflow_bal_TestAlbatross') || 0),
+        MainAlbatross: Number(localStorage.getItem('nimiqflow_bal_MainAlbatross') || 0)
+    },
+    transactions: {
+        TestAlbatross: JSON.parse(localStorage.getItem('nimiqflow_txs_TestAlbatross') || '[]'),
+        MainAlbatross: JSON.parse(localStorage.getItem('nimiqflow_txs_MainAlbatross') || '[]')
+    }
 };
+
+function getActiveNimBalance() {
+    return state.balances[config.nimiqNetwork] || 0;
+}
+
+function getActiveUsdBalance() {
+    return getActiveNimBalance() * state.usdRate;
+}
+
+function getActiveTransactions() {
+    return state.transactions[config.nimiqNetwork] || [];
+}
+
 
 // ==========================================
 // DEEP LINK HANDLER & AUTO-PASTE ADDRESS FORMATTER
@@ -197,7 +216,7 @@ function renderAnalyticsChart() {
 
     ctx.clearRect(0, 0, width, height);
 
-    const txs = state.transactions;
+    const txs = getActiveTransactions();
     const totalCountEl = document.getElementById('analytics-total-count');
     const avgTransferEl = document.getElementById('analytics-avg-transfer');
 
@@ -340,6 +359,28 @@ function setupFaucetTriggers() {
                 if (!state.address) {
                     setAddress(targetAddr);
                 }
+
+                // Credit 10,000 Test NIM specifically to TestAlbatross state
+                const currentTestBal = state.balances.TestAlbatross || 0;
+                state.balances.TestAlbatross = currentTestBal + 10000;
+                localStorage.setItem('nimiqflow_bal_TestAlbatross', state.balances.TestAlbatross.toString());
+
+                const faucetTx = {
+                    hash: 'faucet_' + Date.now(),
+                    from: 'NQ81 C01N BASE 0000 0000 0000 0000 0000 0000',
+                    to: targetAddr,
+                    value: nimToLuna(10000),
+                    blockNumber: 'Faucet',
+                    timestamp: Math.floor(Date.now() / 1000)
+                };
+
+                const existingTestTxs = state.transactions.TestAlbatross || [];
+                state.transactions.TestAlbatross = [faucetTx, ...existingTestTxs];
+                localStorage.setItem('nimiqflow_txs_TestAlbatross', JSON.stringify(state.transactions.TestAlbatross));
+
+                updateBalanceDisplay();
+                renderTransactions();
+                renderAnalyticsChart();
 
                 setTimeout(() => refreshAllData(), 1500);
             } catch (err) {
@@ -825,7 +866,7 @@ async function sharePaymentLink(title, text, url) {
 }
 
 function exportTransactionsCSV() {
-    const txs = state.transactions;
+    const txs = getActiveTransactions();
     if (!txs || txs.length === 0) {
         showToast('No transaction data available to export');
         return;
@@ -941,10 +982,13 @@ function setAddress(newAddr) {
 
 function disconnectWallet() {
     state.address = '';
-    state.nimBalance = 0;
-    state.usdBalance = 0;
-    state.transactions = [];
+    state.balances = { TestAlbatross: 0, MainAlbatross: 0 };
+    state.transactions = { TestAlbatross: [], MainAlbatross: [] };
     localStorage.removeItem('nimiqflow_address');
+    localStorage.removeItem('nimiqflow_bal_TestAlbatross');
+    localStorage.removeItem('nimiqflow_bal_MainAlbatross');
+    localStorage.removeItem('nimiqflow_txs_TestAlbatross');
+    localStorage.removeItem('nimiqflow_txs_MainAlbatross');
     updateBalanceDisplay();
     renderTransactions();
     renderAnalyticsChart();
@@ -961,15 +1005,39 @@ async function fetchExchangeRateData() {
 
 async function fetchNimiqAccountData() {
     if (!state.address) return;
+    const activeNet = config.nimiqNetwork;
     const rawBalance = await fetchRpcAccountBalance(state.address);
-    state.nimBalance = lunaToNim(rawBalance);
-    state.usdBalance = state.nimBalance * state.usdRate;
+    const nimVal = lunaToNim(rawBalance);
+
+    if (activeNet === 'MainAlbatross') {
+        state.balances.MainAlbatross = nimVal;
+        localStorage.setItem('nimiqflow_bal_MainAlbatross', nimVal.toString());
+    } else {
+        if (nimVal > 0) {
+            state.balances.TestAlbatross = nimVal;
+            localStorage.setItem('nimiqflow_bal_TestAlbatross', nimVal.toString());
+        }
+    }
     updateBalanceDisplay();
 }
 
 async function fetchNimiqTransactionsData() {
     if (!state.address) return;
-    state.transactions = await fetchRpcTransactions(state.address);
+    const activeNet = config.nimiqNetwork;
+    const rpcTxs = await fetchRpcTransactions(state.address);
+
+    if (activeNet === 'MainAlbatross') {
+        state.transactions.MainAlbatross = Array.isArray(rpcTxs) ? rpcTxs : [];
+        localStorage.setItem('nimiqflow_txs_MainAlbatross', JSON.stringify(state.transactions.MainAlbatross));
+    } else {
+        if (Array.isArray(rpcTxs) && rpcTxs.length > 0) {
+            const existing = state.transactions.TestAlbatross || [];
+            const existingHashes = new Set(existing.map(t => t.hash));
+            const newRpcTxs = rpcTxs.filter(t => !existingHashes.has(t.hash));
+            state.transactions.TestAlbatross = [...newRpcTxs, ...existing];
+            localStorage.setItem('nimiqflow_txs_TestAlbatross', JSON.stringify(state.transactions.TestAlbatross));
+        }
+    }
     renderTransactions();
     renderAnalyticsChart();
 }
@@ -1026,10 +1094,10 @@ function updateBalanceDisplay() {
     const formattedAddr = formatNimiqAddress(state.address);
 
     if (addrEl) addrEl.textContent = formattedAddr;
-    if (nimEl) nimEl.textContent = formatNIM(state.nimBalance);
-    if (usdElMain) usdElMain.textContent = formatUSD(state.usdBalance);
+    if (nimEl) nimEl.textContent = formatNIM(getActiveNimBalance());
+    if (usdElMain) usdElMain.textContent = formatUSD(getActiveUsdBalance());
     if (receiveAddrEl) receiveAddrEl.textContent = formattedAddr;
-    if (sendModalBalance) sendModalBalance.textContent = `${formatNIM(state.nimBalance)} NIM`;
+    if (sendModalBalance) sendModalBalance.textContent = `${formatNIM(getActiveNimBalance())} NIM`;
     if (profAddr) profAddr.textContent = state.address.slice(0, 9) + '...' + state.address.slice(-6);
 
     renderReceiveQRCode();
@@ -1042,6 +1110,7 @@ function renderTransactions() {
     if (!container) return;
 
     const dict = TRANSLATIONS[state.currentLang] || TRANSLATIONS.en;
+    const activeTxs = getActiveTransactions();
 
     if (!state.address) {
         const emptyHtml = `
@@ -1055,7 +1124,7 @@ function renderTransactions() {
         return;
     }
 
-    if (state.transactions.length === 0) {
+    if (activeTxs.length === 0) {
         const emptyHtml = `
             <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">history</span>
@@ -1070,7 +1139,7 @@ function renderTransactions() {
     const cleanAddress = state.address.replace(/\s+/g, '').toUpperCase();
     let totalVolumeLuna = 0;
 
-    const filteredTxList = state.transactions.filter(tx => {
+    const filteredTxList = activeTxs.filter(tx => {
         const isIncoming = tx.to && tx.to.replace(/\s+/g, '').toUpperCase() === cleanAddress;
         totalVolumeLuna += Number(tx.value || 0);
 
@@ -1121,7 +1190,7 @@ function renderTransactions() {
         `;
     };
 
-    container.innerHTML = state.transactions.slice(0, 5).map(renderTxItem).join('');
+    container.innerHTML = activeTxs.slice(0, 5).map(renderTxItem).join('');
 
     if (fullContainer) {
         if (filteredTxList.length === 0) {
