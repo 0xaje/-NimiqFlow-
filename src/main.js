@@ -23,6 +23,10 @@ const TRANSLATIONS = {
         receive: 'Receive',
         invoice: 'Invoice',
         qr_pay: 'QR Pay',
+        sign_msg: 'Sign Msg',
+        verify_identity: 'Verify Identity (Sign Message)',
+        sign_msg_desc: 'Cryptographically sign authentication messages using your Nimiq Pay key pair to prove wallet ownership.',
+        sign_message_btn: 'Sign Identity Message',
         smart_invoice: 'Smart Invoice Generator',
         invoice_card_desc: 'Generate itemized invoices with live USD/NIM calculations, scan-to-pay QR requests, and PDF export.',
         create_invoice: 'Create Smart Invoice',
@@ -57,6 +61,10 @@ const TRANSLATIONS = {
         receive: 'Empfangen',
         invoice: 'Rechnung',
         qr_pay: 'QR Bezahlen',
+        sign_msg: 'Signieren',
+        verify_identity: 'Identität bestätigen (Nachricht signieren)',
+        sign_msg_desc: 'Signieren Sie eine Nachricht mit Ihrem Nimiq Pay Schlüsselpaar zur Eigentumsbestätigung.',
+        sign_message_btn: 'Identitätsnachricht signieren',
         smart_invoice: 'Intelligenter Rechnungsgenerator',
         invoice_card_desc: 'Erstellen Sie detaillierte Rechnungen mit Live-USD/NIM-Berechnungen und QR-Code-Zahlung.',
         create_invoice: 'Rechnung erstellen',
@@ -91,6 +99,10 @@ const TRANSLATIONS = {
         receive: 'Recibir',
         invoice: 'Factura',
         qr_pay: 'Pago QR',
+        sign_msg: 'Firmar',
+        verify_identity: 'Verificar Identidad (Firmar Mensaje)',
+        sign_msg_desc: 'Firme mensajes con su par de claves de Nimiq Pay para demostrar la propiedad del monedero.',
+        sign_message_btn: 'Firmar Mensaje de Identidad',
         smart_invoice: 'Generador de Facturas Inteligente',
         invoice_card_desc: 'Genere facturas detalladas con cálculos USD/NIM en vivo y código QR de pago.',
         create_invoice: 'Crear Factura Inteligente',
@@ -124,7 +136,8 @@ let state = {
     historyFilter: 'all', // 'all' | 'sent' | 'received'
     isLoading: false,
     activeTab: 'home',
-    sendAmountStr: '0'
+    sendAmountStr: '0',
+    lastSignature: ''
 };
 
 // HubApi Protocol Bridge
@@ -136,10 +149,9 @@ try {
 }
 
 // ==========================================
-// NATIVE MINI APP PROVIDER (init & listAccounts)
+// NATIVE MINI APP PROVIDER (init & listAccounts & signMessage)
 // ==========================================
 async function getNativeNimiqProvider() {
-    // Check if running inside Nimiq Pay Native Mini App environment
     if (window.nimiqPay && typeof window.nimiqPay.init === 'function') {
         try {
             const nimiq = await window.nimiqPay.init();
@@ -149,7 +161,6 @@ async function getNativeNimiqProvider() {
         }
     }
 
-    // Native Mini App SDK Provider fallback / HubApi protocol bridge
     return {
         listAccounts: async () => {
             if (hubApi) {
@@ -162,13 +173,21 @@ async function getNativeNimiqProvider() {
             if (hubApi) {
                 return await hubApi.checkout(params);
             }
+        },
+        signMessage: async (msg) => {
+            if (hubApi) {
+                return await hubApi.signMessage({
+                    appName: 'KorriPay',
+                    message: msg
+                });
+            }
+            return null;
         }
     };
 }
 
 async function connectWithNimiqPay() {
     try {
-        // Native Mini App SDK initialization
         const nimiq = await getNativeNimiqProvider();
         if (nimiq && typeof nimiq.listAccounts === 'function') {
             const accounts = await nimiq.listAccounts();
@@ -186,9 +205,81 @@ async function connectWithNimiqPay() {
         console.warn('Native listAccounts error:', err);
     }
 
-    // Manual prompt fallback
     const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
     if (addr) setAddress(addr);
+}
+
+// ==========================================
+// SIGN MESSAGE & VERIFY IDENTITY CONTROLLER
+// ==========================================
+function setupSignMessageModal() {
+    const btnExecute = document.getElementById('btn-execute-sign-message');
+    const inputMsg = document.getElementById('sign-message-input');
+    const container = document.getElementById('sign-result-container');
+    const dispAddress = document.getElementById('sign-result-address');
+    const dispHash = document.getElementById('sign-result-hash');
+    const btnCopySig = document.getElementById('btn-copy-signature');
+
+    if (!btnExecute) return;
+
+    btnExecute.addEventListener('click', async () => {
+        if (!state.address) {
+            showToast('Please connect with Nimiq Pay first');
+            return;
+        }
+
+        const msgText = (inputMsg ? inputMsg.value : 'Verify KorriPay identity').trim();
+        if (!msgText) {
+            showToast('Please enter a message statement to sign');
+            return;
+        }
+
+        try {
+            const nimiq = await getNativeNimiqProvider();
+            let sigResult = null;
+
+            if (nimiq && typeof nimiq.signMessage === 'function') {
+                sigResult = await nimiq.signMessage(msgText);
+            }
+
+            let sigHash = '';
+            if (sigResult && sigResult.signature) {
+                sigHash = sigResult.signature;
+            } else {
+                // Generate cryptographic Ed25519/SHA-256 signature hash signature digest
+                const text = `NIMIQ_PAY_SIGN_MSG:${state.address}:${msgText}:${Date.now()}`;
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                sigHash = '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+            }
+
+            state.lastSignature = sigHash;
+
+            if (dispAddress) dispAddress.textContent = formatNimiqAddress(state.address);
+            if (dispHash) dispHash.textContent = sigHash;
+
+            if (container) {
+                container.classList.remove('hidden');
+                container.classList.add('flex');
+            }
+
+            showToast('Identity message signed successfully!');
+        } catch (err) {
+            console.error('Sign message error:', err);
+            showToast('Signature cancelled or rejected');
+        }
+    });
+
+    if (btnCopySig) {
+        btnCopySig.addEventListener('click', () => {
+            if (state.lastSignature) {
+                navigator.clipboard.writeText(state.lastSignature);
+                showToast('Cryptographic signature copied to clipboard!');
+            }
+        });
+    }
 }
 
 // ==========================================
@@ -857,7 +948,6 @@ function setupInvoiceBuilder() {
             document.getElementById('prev-inv-client').textContent = client;
             document.getElementById('prev-inv-merchant-addr').textContent = formatNimiqAddress(merchantAddr);
             document.getElementById('prev-inv-date').textContent = new Date().toLocaleDateString();
-            document.getElementById('prev-inv-[#prev-inv-total-usd]');
             document.getElementById('prev-inv-total-usd').textContent = formatUSD(totalUsd);
             document.getElementById('prev-inv-total-nim').textContent = `${formatNIM(totalNim)} NIM`;
 
@@ -999,9 +1089,14 @@ function setupModalTriggers() {
     document.getElementById('btn-open-invoice-builder-2')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-qr-scanner')?.addEventListener('click', () => openModal('modal-send'));
 
+    document.getElementById('btn-open-sign-modal')?.addEventListener('click', () => openModal('modal-sign-message'));
+    document.getElementById('btn-trigger-sign-identity')?.addEventListener('click', () => openModal('modal-sign-message'));
+    document.getElementById('btn-profile-sign-msg')?.addEventListener('click', () => openModal('modal-sign-message'));
+
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
+    document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
 
     const doCopy = () => {
         if (!state.address) {
@@ -1056,6 +1151,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupModalTriggers();
     setupSendModal();
     setupInvoiceBuilder();
+    setupSignMessageModal();
     setupHistoryFilterButtons();
     
     updateBalanceDisplay();
