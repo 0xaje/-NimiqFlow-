@@ -29,7 +29,7 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-hdK967rA.js"></script>
+  <script type="module" crossorigin src="/assets/index-DFayBpyi.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-OdQ7wZ4g.css">
 </head>
 <body class="bg-[#0d0f0f] text-[#e2e2e2] min-h-screen pb-24">
@@ -63,7 +63,7 @@
                     <span class="text-lg font-bold text-[#ffc982] tracking-tight leading-none">Nimiq Flow</span>
                     <div class="flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[10px] text-emerald-400 font-semibold">
                         <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified_user</span>
-                        <span id="header-device-badge" data-i18n="device_verified">Verified</span>
+                        <span id="header-device-badge" data-i18n="device_verified">Trusted Device</span>
                     </div>
                 </div>
             </div>
@@ -257,7 +257,7 @@
                 </div>
             </section>
 
-            <!-- Device Identifier & Hardware Verification Panel -->
+            <!-- Device Identifier & Verification Panel -->
             <section class="glass-card rounded-2xl p-4 border border-emerald-500/30 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40">
@@ -265,9 +265,10 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-white" data-i18n="device_verified">Device Verified</span>
-                            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase">HARDWARE SDK</span>
+                            <span class="text-xs font-bold text-white" data-i18n="device_verified">Trusted Device Verification</span>
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase">MINI APP SDK</span>
                         </div>
+                        <p class="text-[11px] text-[#d7c3ae] mt-0.5">Privacy-preserving device identifier for spam prevention & saved preferences.</p>
                         <p class="text-[11px] font-mono text-[#d7c3ae] mt-0.5 flex items-center gap-1">
                             <span>ID:</span>
                             <span id="device-id-display" class="text-[#ffc982] font-bold">••••••••</span>
@@ -326,7 +327,7 @@
                     <input id="req-pay-amount-nim" type="number" step="1" value="100" placeholder="100" class="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:border-sky-400 focus:outline-none"/>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">USD Estimate</label>
+                    <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">USD Estimate (CoinGecko)</label>
                     <div id="req-pay-amount-usd" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-sky-300 font-mono flex items-center">≈ $0.05 USD</div>
                 </div>
             </div>
@@ -558,7 +559,7 @@
                 </div>
 
                 <div class="p-3 bg-white/5 rounded-xl border border-white/10 flex justify-between items-center mt-2">
-                    <span class="text-xs font-semibold text-[#d7c3ae]">AI Calculated Total:</span>
+                    <span class="text-xs font-semibold text-[#d7c3ae]">Invoice Total (CoinGecko USD ↔ NIM):</span>
                     <div class="text-right">
                         <span id="invoice-total-usd-display" class="block text-sm font-bold text-white">$100.00 USD</span>
                         <span id="invoice-total-nim-display" class="text-xs font-mono text-[#ffc982] font-bold">≈ 0.00 NIM</span>

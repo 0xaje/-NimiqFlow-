@@ -12,7 +12,7 @@ const TRANSLATIONS = {
     en: {
         mini_app_subtitle: 'Smart Crypto Payments, Simplified.',
         splash_initializing: 'Initializing Native Mini App SDK...',
-        device_verified: 'Verified',
+        device_verified: 'Trusted Device',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Connect with Nimiq Pay',
         total_balance: 'Total Balance (USD)',
@@ -43,7 +43,7 @@ const TRANSLATIONS = {
     de: {
         mini_app_subtitle: 'Intelligente Krypto-Zahlungen, Vereinfacht.',
         splash_initializing: 'Native Mini App SDK wird initialisiert...',
-        device_verified: 'Bestätigt',
+        device_verified: 'Vertrauenswürdiges Gerät',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Mit Nimiq Pay verbinden',
         total_balance: 'Gesamtguthaben (USD)',
@@ -74,7 +74,7 @@ const TRANSLATIONS = {
     es: {
         mini_app_subtitle: 'Pagos Cripto Inteligentes, Simplificados.',
         splash_initializing: 'Inicializando Native Mini App SDK...',
-        device_verified: 'Verificado',
+        device_verified: 'Dispositivo de Confianza',
         mainnet_live: 'Nimiq Mainnet en Vivo',
         connect: 'Conectar con Nimiq Pay',
         total_balance: 'Saldo Total (USD)',
@@ -389,7 +389,7 @@ function setupLanguageSwitchers() {
 }
 
 // ==========================================
-// REAL HARDWARE WEB CRYPTO DEVICE IDENTIFIER
+// PRIVACY-PRESERVING DEVICE IDENTIFIER (SDK)
 // ==========================================
 async function requestDeviceIdentifier() {
     if (state.deviceId) {
@@ -416,7 +416,7 @@ function updateDeviceIdUI(deviceId) {
     if (disp) {
         const masked = `••••••••-${deviceId.slice(-4)}`;
         disp.textContent = masked;
-        disp.title = `Full Device ID: ${deviceId}`;
+        disp.title = `Device ID: ${deviceId}`;
     }
 }
 
@@ -505,7 +505,7 @@ function disconnectWallet() {
 }
 
 // ==========================================
-// REAL BLOCKCHAIN RPC & MARKET DATA API INTEGRATION
+// REAL COINGECKO MARKET CONVERSION & RPC DATA
 // ==========================================
 async function fetchExchangeRate() {
     try {
@@ -600,7 +600,7 @@ function updateRateDisplay() {
 
 function updateBalanceDisplay() {
     const addrEl = document.getElementById('display-address');
-    const nimEl = document.getElementById('display-[#display-nim-balance]');
+    const nimEl = document.getElementById('display-nim-balance');
     const usdElMain = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
     const sendModalBalance = document.getElementById('send-modal-balance');
