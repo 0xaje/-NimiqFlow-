@@ -6,7 +6,7 @@ Welcome judges! This guide provides a step-by-step walkthrough to test and evalu
 
 ## ⚡ Quick-Start Demo Setup
 
-1. Launch Nimiq Flow at `http://localhost:5173`.
+1. Launch Nimiq Flow at [https://nimiq-flow.vercel.app](https://nimiq-flow.vercel.app) (or locally at `http://localhost:5173`).
 2. Ensure network mode is set to **`TestAlbatross`** (visible via the blue pill badge at the top header).
 
 ---

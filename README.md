@@ -98,7 +98,7 @@ For detailed configuration guidelines, see [SETUP.md](./SETUP.md).
 
 ## 🎬 Demo & Video Walkthrough
 
-- **Live Mini App Web URL**: `http://localhost:5173`
+- **Live Production App URL**: [https://nimiq-flow.vercel.app](https://nimiq-flow.vercel.app)
 - **GitHub Repository**: [https://github.com/0xaje/-NimiqFlow-](https://github.com/0xaje/-NimiqFlow-)
 - **Testing Guide**: See [DEMO.md](./DEMO.md) for a step-by-step judge testing script.
 
