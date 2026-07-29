@@ -1424,6 +1424,14 @@ function setupInvoiceBuilder() {
         });
     }
 
+    document.querySelectorAll('.btn-sample-ai-prompt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const prompt = btn.getAttribute('data-prompt');
+            if (aiPromptInput) aiPromptInput.value = prompt;
+            parseInvoicePrompt(prompt);
+        });
+    });
+
     calculateInvoiceTotals();
 }
 
