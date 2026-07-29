@@ -903,12 +903,54 @@ function formatDate(timestamp) {
            date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
-function showToast(message) {
+function showToast(message, type = 'info') {
+    const existing = document.querySelectorAll('.nimiqflow-toast');
+    existing.forEach(t => t.remove());
+
     const toast = document.createElement('div');
-    toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#ffc982] text-[#462b00] font-bold text-xs px-4 py-2 rounded-full shadow-2xl animate-fade-in-up border border-white/20';
-    toast.textContent = message;
+    let colorClasses = 'bg-[#ffc982] text-[#462b00] border-amber-400/40';
+    let iconName = 'info';
+
+    if (type === 'success') {
+        colorClasses = 'bg-emerald-500 text-slate-950 border-emerald-300';
+        iconName = 'check_circle';
+    } else if (type === 'error') {
+        colorClasses = 'bg-red-500 text-white border-red-300';
+        iconName = 'error';
+    }
+
+    toast.className = `nimiqflow-toast fixed bottom-24 left-1/2 -translate-x-1/2 z-50 ${colorClasses} font-bold text-xs px-4 py-2.5 rounded-full shadow-2xl animate-fade-in-up border flex items-center gap-2 max-w-[90vw] text-center`;
+    toast.innerHTML = `<span class="material-symbols-outlined text-base">${iconName}</span><span>${message}</span>`;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    setTimeout(() => toast.remove(), 2800);
+}
+
+function setupNetworkOfflineListeners() {
+    const banner = document.getElementById('offline-banner');
+    
+    const handleOnline = () => {
+        if (banner) {
+            banner.classList.add('hidden');
+            banner.classList.remove('flex');
+        }
+        showToast('Network connection restored', 'success');
+        refreshAllData();
+    };
+
+    const handleOffline = () => {
+        if (banner) {
+            banner.classList.remove('hidden');
+            banner.classList.add('flex');
+        }
+        showToast('Network connection lost (Offline Mode)', 'error');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    if (!navigator.onLine) {
+        handleOffline();
+    }
 }
 
 function validateNimiqAddress(addr) {
@@ -1838,6 +1880,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupSignMessageModal();
     setupHistoryFilterButtons();
     setupDeepLinkHandler();
+    setupNetworkOfflineListeners();
     
     updateBalanceDisplay();
     if (state.address) {

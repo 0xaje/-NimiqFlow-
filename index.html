@@ -73,12 +73,18 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <button id="btn-connect-hub" class="px-3.5 py-1.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs hover:opacity-90 transition-all flex items-center gap-1 shadow-md active:scale-95">
-                <span class="material-symbols-outlined text-sm">link</span>
-                <span id="btn-connect-label" data-i18n="connect">Connect with Nimiq Pay</span>
+            <button id="btn-quick-connect" class="px-3.5 py-1.5 bg-[#f6a623] text-[#462b00] font-extrabold text-xs rounded-xl hover:opacity-90 transition-all flex items-center gap-1.5 shadow-md active:scale-95">
+                <span class="material-symbols-outlined text-sm">wallet</span>
+                <span data-i18n="connect">Connect</span>
             </button>
         </div>
     </header>
+
+    <!-- OFFLINE NETWORK DETECTOR BANNER -->
+    <div id="offline-banner" class="fixed top-16 left-1/2 -translate-x-1/2 z-40 bg-red-500/90 text-white border border-red-400 px-4 py-1.5 rounded-full text-xs font-bold shadow-2xl hidden items-center gap-2 animate-bounce">
+        <span class="material-symbols-outlined text-sm">wifi_off</span>
+        <span>Offline Mode — Reconnecting to Nimiq RPC...</span>
+    </div>
 
     <!-- MAIN APP CONTAINER -->
     <main class="pt-20 px-4 max-w-lg mx-auto flex flex-col gap-5">
