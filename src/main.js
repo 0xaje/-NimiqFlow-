@@ -26,6 +26,31 @@ try {
 }
 
 // ==========================================
+// SPLASH SCREEN CONTROLLER
+// ==========================================
+function initSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    const progressBar = document.getElementById('splash-progress-bar');
+    if (!splash) return;
+
+    // Trigger progress bar animation
+    setTimeout(() => {
+        if (progressBar) progressBar.style.width = '100%';
+    }, 150);
+
+    // Dismiss splash overlay
+    const dismissSplash = () => {
+        splash.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+            if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 700);
+    };
+
+    setTimeout(dismissSplash, 1500);
+    splash.addEventListener('click', dismissSplash);
+}
+
+// ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNimiqAddress(addr) {
@@ -81,7 +106,6 @@ async function connectNimiqWallet() {
             }
         } catch (err) {
             console.warn('Hub chooseAddress note:', err);
-            // Fallback to hub login request
             hubApi.login({ appName: 'KorriPay' }).catch(() => {
                 showToast('Wallet selection cancelled or closed');
             });
@@ -742,6 +766,7 @@ function setupModalTriggers() {
 // BOOTSTRAP APP
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
+    initSplashScreen();
     initShaderCanvas();
     setupNavigation();
     setupModalTriggers();
