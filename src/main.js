@@ -9,7 +9,7 @@ import {
     fetchRpcConsensusStatus,
     claimFaucetTokens
 } from './services/rpc.js';
-import { getNativeNimiqProvider } from './services/wallet.js';
+import { getNativeNimiqProvider, isValidNimiqAddress } from './services/wallet.js';
 
 // ==========================================
 // STATE & TRANSLATIONS
@@ -568,8 +568,46 @@ async function updateDeveloperDiagnosticsUI() {
 // ==========================================
 // WALLET CONNECT
 // ==========================================
+function openConnectModal() {
+    const modal = document.getElementById('modal-connect-wallet');
+    const connectedView = document.getElementById('connect-modal-connected-view');
+    const optionsView = document.getElementById('connect-modal-options-view');
+    const addrDisp = document.getElementById('connect-modal-address');
+    const netBadge = document.getElementById('connect-modal-net-badge');
+
+    if (!modal) return;
+
+    if (netBadge) netBadge.textContent = config.nimiqNetwork;
+
+    if (state.address) {
+        if (connectedView) {
+            connectedView.classList.remove('hidden');
+            connectedView.classList.add('flex');
+        }
+        if (optionsView) {
+            optionsView.classList.add('hidden');
+            optionsView.classList.remove('flex');
+        }
+        if (addrDisp) {
+            addrDisp.textContent = formatNimiqAddress(state.address);
+        }
+    } else {
+        if (connectedView) {
+            connectedView.classList.add('hidden');
+            connectedView.classList.remove('flex');
+        }
+        if (optionsView) {
+            optionsView.classList.remove('hidden');
+            optionsView.classList.add('flex');
+        }
+    }
+
+    openModal('modal-connect-wallet');
+}
+
 async function connectWithNimiqPay() {
     try {
+        showToast('Opening Nimiq Pay / Hub connection...');
         const nimiq = await getNativeNimiqProvider();
         if (nimiq && typeof nimiq.listAccounts === 'function') {
             const accounts = await nimiq.listAccounts();
@@ -578,17 +616,16 @@ async function connectWithNimiqPay() {
                 const addr = typeof raw === 'string' ? raw : (raw.address || raw.userAddress);
                 if (addr) {
                     setAddress(addr);
-                    showToast(`Connected via Nimiq Flow: ${formatNimiqAddress(addr)}`);
+                    closeModal('modal-connect-wallet');
+                    showToast(`Connected via Nimiq Pay / Hub: ${formatNimiqAddress(addr)}`);
                     return;
                 }
             }
         }
     } catch (err) {
         console.warn('Native listAccounts:', err);
+        showToast('Nimiq Pay connection closed or cancelled.');
     }
-
-    const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
-    if (addr) setAddress(addr);
 }
 
 // ==========================================
@@ -1173,6 +1210,7 @@ function updateBalanceDisplay() {
     const receiveAddrEl = document.getElementById('receive-display-address');
     const sendModalBalance = document.getElementById('send-modal-balance');
     const btnConnectLabel = document.getElementById('btn-connect-label');
+    const btnQuickConnect = document.getElementById('btn-quick-connect');
 
     const profAddr = document.getElementById('profile-address-display');
 
@@ -1190,12 +1228,20 @@ function updateBalanceDisplay() {
             profAddr.textContent = TRANSLATIONS[state.currentLang]?.not_connected || 'Not Connected';
         }
         if (btnConnectLabel) {
-            btnConnectLabel.textContent = TRANSLATIONS[state.currentLang]?.connect || 'Connect with Nimiq Pay';
+            btnConnectLabel.textContent = TRANSLATIONS[state.currentLang]?.connect || 'Connect';
+        }
+        if (btnQuickConnect) {
+            btnQuickConnect.classList.remove('bg-emerald-500/20', 'text-emerald-300', 'border', 'border-emerald-400/30');
+            btnQuickConnect.classList.add('bg-[#f6a623]', 'text-[#462b00]');
         }
         return;
     }
 
     if (btnConnectLabel) btnConnectLabel.textContent = state.address.slice(0, 9) + '...';
+    if (btnQuickConnect) {
+        btnQuickConnect.classList.remove('bg-[#f6a623]', 'text-[#462b00]');
+        btnQuickConnect.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border', 'border-emerald-400/30');
+    }
 
     const formattedAddr = formatNimiqAddress(state.address);
 
@@ -1803,7 +1849,55 @@ function closeModal(id) {
 }
 
 function setupModalTriggers() {
-    document.getElementById('btn-connect-hub')?.addEventListener('click', connectWithNimiqPay);
+    const doCopy = () => {
+        if (!state.address) {
+            showToast('Please connect with Nimiq Pay first');
+            openConnectModal();
+            return;
+        }
+        navigator.clipboard.writeText(state.address.replace(/\s+/g, ''));
+        showToast('Nimiq address copied to clipboard!');
+    };
+
+    const openExplorer = () => {
+        const url = getAccountExplorerUrl(state.address);
+        window.open(url, '_blank');
+    };
+
+    document.getElementById('btn-quick-connect')?.addEventListener('click', openConnectModal);
+    document.getElementById('btn-close-connect-modal')?.addEventListener('click', () => closeModal('modal-connect-wallet'));
+    document.getElementById('btn-connect-native-sdk')?.addEventListener('click', connectWithNimiqPay);
+
+    document.getElementById('btn-connect-demo-fill')?.addEventListener('click', () => {
+        const demoAddr = 'NQ86 6B83 U28U 1L6D G20S RFTX N622 174P J7BA';
+        setAddress(demoAddr);
+        closeModal('modal-connect-wallet');
+        showToast(`Connected with Demo Testnet Address: ${formatNimiqAddress(demoAddr)}`);
+    });
+
+    document.getElementById('btn-submit-manual-connect')?.addEventListener('click', () => {
+        const input = document.getElementById('input-manual-connect-address');
+        const val = input ? input.value.trim() : '';
+        if (!val) {
+            showToast('Please enter a Nimiq address');
+            return;
+        }
+        if (!isValidNimiqAddress(val)) {
+            showToast('Invalid Nimiq address format. E.g.: NQ86 6B83...');
+            return;
+        }
+        setAddress(val);
+        closeModal('modal-connect-wallet');
+        if (input) input.value = '';
+        showToast(`Connected address: ${formatNimiqAddress(val)}`);
+    });
+
+    document.getElementById('btn-modal-copy-addr')?.addEventListener('click', doCopy);
+    document.getElementById('btn-modal-explorer-addr')?.addEventListener('click', openExplorer);
+    document.getElementById('btn-modal-disconnect-wallet')?.addEventListener('click', () => {
+        disconnectWallet();
+        closeModal('modal-connect-wallet');
+    });
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
@@ -1821,18 +1915,14 @@ function setupModalTriggers() {
     document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
     document.getElementById('btn-close-about-modal')?.addEventListener('click', () => closeModal('modal-about'));
 
+    document.getElementById('display-address')?.addEventListener('click', openConnectModal);
+    document.getElementById('receive-display-address')?.addEventListener('click', () => {
+        if (!state.address) openConnectModal();
+    });
+
     document.getElementById('btn-about-view-docs')?.addEventListener('click', () => {
         window.open('https://github.com/0xaje/-NimiqFlow-#readme', '_blank');
     });
-
-    const doCopy = () => {
-        if (!state.address) {
-            showToast('Please connect with Nimiq Pay first');
-            return;
-        }
-        navigator.clipboard.writeText(state.address.replace(/\s+/g, ''));
-        showToast('Nimiq address copied to clipboard!');
-    };
 
     document.getElementById('btn-copy-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
@@ -1842,6 +1932,7 @@ function setupModalTriggers() {
     document.getElementById('btn-share-receive-address')?.addEventListener('click', () => {
         if (!state.address) {
             showToast('Please connect with Nimiq Pay first');
+            openConnectModal();
             return;
         }
         sharePaymentLink('Nimiq Flow Address', 'My Nimiq Pay receiving address:', state.address.replace(/\s+/g, ''));
@@ -1856,11 +1947,6 @@ function setupModalTriggers() {
             }
         });
     }
-
-    const openExplorer = () => {
-        const url = getAccountExplorerUrl(state.address);
-        window.open(url, '_blank');
-    };
 
     document.getElementById('btn-explorer-link')?.addEventListener('click', openExplorer);
 

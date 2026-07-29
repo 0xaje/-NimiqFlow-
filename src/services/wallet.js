@@ -1,6 +1,12 @@
 import HubApi from '@nimiq/hub-api';
 import { config } from './config.js';
 
+export function isValidNimiqAddress(addr) {
+    if (!addr || typeof addr !== 'string') return false;
+    const clean = addr.replace(/\s+/g, '').toUpperCase();
+    return /^NQ[0-9A-Z]{34}$/.test(clean);
+}
+
 function getHubApiInstance() {
     const hubUrl = config.nimiqNetwork === 'TestAlbatross' 
         ? 'https://hub.nimiq-testnet.com' 
@@ -28,10 +34,29 @@ export async function getNativeNimiqProvider() {
     return {
         listAccounts: async () => {
             if (hubApi) {
-                const res = await hubApi.chooseAddress({ appName: 'Nimiq Flow' });
-                return res && res.address ? [{ address: res.address, label: 'Nimiq Flow Account' }] : [];
+                try {
+                    const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
+                    if (res && res.address) {
+                        return [{ address: res.address, label: res.label || 'Nimiq Account' }];
+                    }
+                } catch (err) {
+                    console.warn('hubApi.chooseAddress note:', err);
+                    throw err;
+                }
             }
             return [];
+        },
+        login: async () => {
+            if (hubApi) {
+                try {
+                    const res = await hubApi.login({ appName: 'KorriPay' });
+                    return res;
+                } catch (err) {
+                    console.warn('hubApi.login note:', err);
+                    throw err;
+                }
+            }
+            return null;
         },
         sendTransaction: async (params) => {
             if (hubApi) {
@@ -41,7 +66,7 @@ export async function getNativeNimiqProvider() {
         signMessage: async (msg) => {
             if (hubApi) {
                 return await hubApi.signMessage({
-                    appName: 'Nimiq Flow',
+                    appName: 'KorriPay',
                     message: msg
                 });
             }
@@ -49,3 +74,4 @@ export async function getNativeNimiqProvider() {
         }
     };
 }
+

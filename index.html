@@ -75,7 +75,7 @@
         <div class="flex items-center gap-2">
             <button id="btn-quick-connect" class="px-3.5 py-1.5 bg-[#f6a623] text-[#462b00] font-extrabold text-xs rounded-xl hover:opacity-90 transition-all flex items-center gap-1.5 shadow-md active:scale-95">
                 <span class="material-symbols-outlined text-sm">wallet</span>
-                <span data-i18n="connect">Connect</span>
+                <span id="btn-connect-label" data-i18n="connect">Connect</span>
             </button>
         </div>
     </header>
@@ -137,40 +137,40 @@
             </section>
 
             <!-- ACTION GRID: SEND, RECEIVE, REQUEST, AI INVOICE, SIGN MSG -->
-            <section class="grid grid-cols-5 gap-2 animate-fade-in-up delay-1">
-                <button id="btn-open-send" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 rounded-2xl bg-[#f6a623]/15 border border-[#f6a623]/30 flex items-center justify-center text-[#ffc982] group-hover:bg-[#f6a623] group-hover:text-[#462b00] transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-2xl">send</span>
+            <section class="grid grid-cols-5 gap-1.5 sm:gap-2 animate-fade-in-up delay-1">
+                <button id="btn-open-send" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200 min-w-0">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#f6a623]/15 border border-[#f6a623]/30 flex items-center justify-center text-[#ffc982] group-hover:bg-[#f6a623] group-hover:text-[#462b00] transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">send</span>
                     </div>
-                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="send">Send</span>
+                    <span class="text-[10px] sm:text-[11px] font-semibold text-[#d7c3ae] truncate max-w-full text-center" data-i18n="send">Send</span>
                 </button>
 
-                <button id="btn-open-receive" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-2xl">call_received</span>
+                <button id="btn-open-receive" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200 min-w-0">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">call_received</span>
                     </div>
-                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="receive">Receive</span>
+                    <span class="text-[10px] sm:text-[11px] font-semibold text-[#d7c3ae] truncate max-w-full text-center" data-i18n="receive">Receive</span>
                 </button>
 
-                <button id="btn-open-request-pay" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-300 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-2xl">request_quote</span>
+                <button id="btn-open-request-pay" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200 min-w-0">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-300 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">request_quote</span>
                     </div>
-                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="request_pay">Request</span>
+                    <span class="text-[10px] sm:text-[11px] font-semibold text-[#d7c3ae] truncate max-w-full text-center" data-i18n="request_pay">Request</span>
                 </button>
 
-                <button id="btn-open-invoice-builder" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+                <button id="btn-open-invoice-builder" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200 min-w-0">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">auto_awesome</span>
                     </div>
-                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="ai_invoice">AI Invoice</span>
+                    <span class="text-[10px] sm:text-[11px] font-semibold text-[#d7c3ae] truncate max-w-full text-center" data-i18n="ai_invoice">AI Invoice</span>
                 </button>
 
-                <button id="btn-open-sign-modal" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-2xl">draw</span>
+                <button id="btn-open-sign-modal" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200 min-w-0">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">draw</span>
                     </div>
-                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="sign_msg">Sign Msg</span>
+                    <span class="text-[10px] sm:text-[11px] font-semibold text-[#d7c3ae] truncate max-w-full text-center" data-i18n="sign_msg">Sign Msg</span>
                 </button>
             </section>
 
@@ -443,7 +443,7 @@
 
     <!-- MODAL: DEDICATED TESTNET FAUCET CLAIM -->
     <div id="modal-faucet" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-sky-500/30 my-4">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-fade-in-up relative border border-sky-500/30 my-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-sky-400 flex items-center gap-2">
                     <span class="material-symbols-outlined text-sky-400 text-2xl">water_drop</span>
@@ -488,7 +488,7 @@
 
     <!-- MODAL: REQUEST PAYMENT -->
     <div id="modal-request-pay" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-fade-in-up relative border border-indigo-500/30 my-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-sky-400 flex items-center gap-2">
                     <span class="material-symbols-outlined text-sky-400">request_quote</span> Request Payment
@@ -544,7 +544,7 @@
 
     <!-- MODAL: SIGN MESSAGE / VERIFY IDENTITY -->
     <div id="modal-sign-message" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-fade-in-up relative border border-emerald-500/30 my-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
                     <span class="material-symbols-outlined text-emerald-400">draw</span> Sign Message
@@ -593,7 +593,7 @@
 
     <!-- MODAL: SEND PAYMENT -->
     <div id="modal-send" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-[#ffc982] flex items-center gap-2">
                     <span class="material-symbols-outlined text-[#ffc982]">send</span> <span data-i18n="send">Send Money</span>
@@ -675,8 +675,8 @@
     </div>
 
     <!-- MODAL: RECEIVE NIM -->
-    <div id="modal-receive" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15">
+    <div id="modal-receive" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-fade-in-up relative border border-white/15">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-[#ffc982] flex items-center gap-2">
                     <span class="material-symbols-outlined text-[#ffc982]">qr_code_2</span> <span data-i18n="receive">Receive Nimiq</span>
@@ -721,7 +721,7 @@
 
     <!-- MODAL: AI-ASSISTED NATURAL LANGUAGE INVOICE BUILDER -->
     <div id="modal-invoice-builder" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-modal rounded-3xl p-6 w-full max-w-lg flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-8">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-fade-in-up relative border border-amber-500/30 my-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-[#ffc982] flex items-center gap-2">
                     <span class="material-symbols-outlined text-[#ffc982]">auto_awesome</span> <span data-i18n="smart_invoice">AI-assisted Natural Language Invoice Builder</span>
@@ -884,6 +884,82 @@
             <span class="text-[10px] mt-0.5" data-i18n="settings">Settings</span>
         </button>
     </nav>
+
+    <!-- CONNECT WALLET MODAL -->
+    <div id="modal-connect-wallet" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-modal w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-3xl p-6 flex flex-col gap-5 border border-white/20 shadow-2xl relative animate-fade-in-up">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#f6a623]/20 text-[#ffc982] flex items-center justify-center border border-[#f6a623]/40 font-bold">
+                        <span class="material-symbols-outlined text-xl">wallet</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Nimiq Pay Wallet</h3>
+                        <span class="text-[10px] text-[#d7c3ae]">Native SDK or Nimiq Address</span>
+                    </div>
+                </div>
+                <button id="btn-close-connect-modal" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <!-- CONNECTED ACCOUNT SUMMARY PANEL (Shown when connected) -->
+            <div id="connect-modal-connected-view" class="hidden flex-col gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] uppercase font-mono font-bold text-emerald-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Active Session
+                    </span>
+                    <span id="connect-modal-net-badge" class="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full font-mono font-bold">TestAlbatross</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[11px] text-[#d7c3ae]">Connected Address</span>
+                    <span id="connect-modal-address" class="text-xs font-mono font-bold text-white break-all select-all mt-0.5">Not Connected</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <button id="btn-modal-copy-addr" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">content_copy</span> Copy
+                    </button>
+                    <button id="btn-modal-explorer-addr" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-[#ffc982] rounded-xl text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">open_in_new</span> Explorer
+                    </button>
+                </div>
+                <button id="btn-modal-disconnect-wallet" class="w-full mt-1 bg-red-500/20 text-red-300 border border-red-500/30 font-bold py-2.5 rounded-xl hover:bg-red-500/30 transition-all text-xs flex items-center justify-center gap-1.5 active:scale-95">
+                    <span class="material-symbols-outlined text-sm">logout</span> Disconnect Wallet
+                </button>
+            </div>
+
+            <!-- DISCONNECTED / CONNECTION OPTIONS -->
+            <div id="connect-modal-options-view" class="flex flex-col gap-3">
+                <!-- 1-Tap Connect via SDK / Hub -->
+                <button id="btn-connect-native-sdk" class="w-full bg-[#f6a623] text-[#462b00] font-extrabold py-3.5 rounded-2xl hover:opacity-90 transition-all text-xs flex items-center justify-center gap-2 shadow-lg active:scale-95">
+                    <span class="material-symbols-outlined text-base">extension</span>
+                    <span>Connect via Nimiq Pay / Hub</span>
+                </button>
+
+                <!-- 1-Tap Fill Demo Address -->
+                <button id="btn-connect-demo-fill" class="w-full bg-sky-500/20 text-sky-300 border border-sky-400/30 font-bold py-3 rounded-2xl hover:bg-sky-500/30 transition-all text-xs flex items-center justify-center gap-2 active:scale-95">
+                    <span class="material-symbols-outlined text-base">bolt</span>
+                    <span>Fill Testnet Demo Address</span>
+                </button>
+
+                <div class="flex items-center gap-2 my-1">
+                    <div class="h-px bg-white/10 flex-1"></div>
+                    <span class="text-[10px] text-[#d7c3ae] font-mono uppercase">or manual entry</span>
+                    <div class="h-px bg-white/10 flex-1"></div>
+                </div>
+
+                <!-- Manual Address Form -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-white">Enter Nimiq Address</label>
+                    <input id="input-manual-connect-address" type="text" placeholder="NQ86 6B83 U28U 1L6D G20S RFTX N622 174P J7BA" class="w-full bg-black/50 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
+                    <button id="btn-submit-manual-connect" class="w-full bg-white/10 text-white font-bold py-3 rounded-2xl hover:bg-white/20 transition-all text-xs flex items-center justify-center gap-2 active:scale-95">
+                        <span>Submit Address</span>
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ABOUT MODAL -->
     <div id="modal-about" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
