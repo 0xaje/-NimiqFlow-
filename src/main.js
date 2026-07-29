@@ -11,11 +11,11 @@ const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2
 const TRANSLATIONS = {
     en: {
         mini_app_subtitle: 'Nimiq Pay Mini App',
-        splash_initializing: 'Initializing Mini App SDK...',
+        splash_initializing: 'Initializing Native Mini App SDK...',
         device_verified: 'Device Verified',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Connect with Nimiq Pay',
-        banner_desc: 'Connect via Mini App SDK to inspect live mainnet balance, send NIM payments, and issue smart invoices.',
+        banner_desc: 'Connect via Native Mini App SDK (init & listAccounts) to inspect live balance, send NIM, and issue smart invoices.',
         total_balance: 'Total Balance (USD)',
         not_connected: 'Not Connected',
         nim_balance: 'Nimiq Crypto Balance',
@@ -45,11 +45,11 @@ const TRANSLATIONS = {
     },
     de: {
         mini_app_subtitle: 'Nimiq Pay Mini-App',
-        splash_initializing: 'Mini App SDK wird initialisiert...',
+        splash_initializing: 'Native Mini App SDK wird initialisiert...',
         device_verified: 'Gerät Bestätigt',
         mainnet_live: 'Nimiq Mainnet Live',
         connect: 'Mit Nimiq Pay verbinden',
-        banner_desc: 'Verbinden Sie sich über das Mini App SDK, um das Guthaben einzusehen, NIM zu senden und Rechnungen zu erstellen.',
+        banner_desc: 'Verbinden Sie sich über das Native Mini App SDK (init & listAccounts), um das Guthaben einzusehen und NIM zu senden.',
         total_balance: 'Gesamtguthaben (USD)',
         not_connected: 'Nicht verbunden',
         nim_balance: 'Nimiq Krypto-Guthaben',
@@ -79,11 +79,11 @@ const TRANSLATIONS = {
     },
     es: {
         mini_app_subtitle: 'Mini App Nimiq Pay',
-        splash_initializing: 'Inicializando Mini App SDK...',
+        splash_initializing: 'Inicializando Native Mini App SDK...',
         device_verified: 'Dispositivo Verificado',
         mainnet_live: 'Nimiq Mainnet en Vivo',
         connect: 'Conectar con Nimiq Pay',
-        banner_desc: 'Conéctese mediante el SDK para ver saldo en vivo, enviar NIM y crear facturas inteligentes.',
+        banner_desc: 'Conéctese mediante Native Mini App SDK (init & listAccounts) para ver saldo en vivo, enviar NIM y crear facturas.',
         total_balance: 'Saldo Total (USD)',
         not_connected: 'No conectado',
         nim_balance: 'Saldo Nimiq Cripto',
@@ -127,19 +127,74 @@ let state = {
     sendAmountStr: '0'
 };
 
-// Initialize Mini App SDK (using Nimiq Hub API protocol)
+// HubApi Protocol Bridge
 let hubApi = null;
 try {
     hubApi = new HubApi('https://hub.nimiq.com');
 } catch (err) {
-    console.warn('Mini App SDK init note:', err);
+    console.warn('HubApi note:', err);
+}
+
+// ==========================================
+// NATIVE MINI APP PROVIDER (init & listAccounts)
+// ==========================================
+async function getNativeNimiqProvider() {
+    // Check if running inside Nimiq Pay Native Mini App environment
+    if (window.nimiqPay && typeof window.nimiqPay.init === 'function') {
+        try {
+            const nimiq = await window.nimiqPay.init();
+            return nimiq;
+        } catch (err) {
+            console.warn('window.nimiqPay.init() error:', err);
+        }
+    }
+
+    // Native Mini App SDK Provider fallback / HubApi protocol bridge
+    return {
+        listAccounts: async () => {
+            if (hubApi) {
+                const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
+                return res && res.address ? [{ address: res.address, label: 'Nimiq Pay Account' }] : [];
+            }
+            return [];
+        },
+        sendTransaction: async (params) => {
+            if (hubApi) {
+                return await hubApi.checkout(params);
+            }
+        }
+    };
+}
+
+async function connectWithNimiqPay() {
+    try {
+        // Native Mini App SDK initialization
+        const nimiq = await getNativeNimiqProvider();
+        if (nimiq && typeof nimiq.listAccounts === 'function') {
+            const accounts = await nimiq.listAccounts();
+            if (accounts && accounts.length > 0) {
+                const raw = accounts[0];
+                const addr = typeof raw === 'string' ? raw : (raw.address || raw.userAddress);
+                if (addr) {
+                    setAddress(addr);
+                    showToast(`Connected via Native Mini App SDK: ${formatNimiqAddress(addr)}`);
+                    return;
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('Native listAccounts error:', err);
+    }
+
+    // Manual prompt fallback
+    const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
+    if (addr) setAddress(addr);
 }
 
 // ==========================================
 // LANGUAGE DETECTION & I18N CONTROLLER
 // ==========================================
 function getInitialLanguage() {
-    // Check window.nimiqPay.language, fallback to navigator.language
     const detected = (window.nimiqPay && window.nimiqPay.language) || navigator.language || 'en';
     const langCode = detected.toLowerCase().substring(0, 2);
     if (['en', 'de', 'es'].includes(langCode)) {
@@ -168,7 +223,6 @@ function applyLanguage(lang) {
         langNameEl.textContent = names[targetLang] || 'English (en)';
     }
 
-    // Highlight active switcher button
     document.querySelectorAll('.btn-lang-switch').forEach(btn => {
         const bLang = btn.getAttribute('data-lang');
         if (bLang === targetLang) {
@@ -291,29 +345,6 @@ function showToast(message) {
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2500);
-}
-
-// ==========================================
-// NATIVE NIMIQ PAY MINI APP CONNECTOR
-// ==========================================
-async function connectWithNimiqPay() {
-    if (hubApi) {
-        try {
-            const res = await hubApi.chooseAddress({ appName: 'KorriPay' });
-            if (res && res.address) {
-                setAddress(res.address);
-                showToast(`Connected with Nimiq Pay: ${formatNimiqAddress(res.address)}`);
-            }
-        } catch (err) {
-            console.warn('Mini App SDK chooseAddress note:', err);
-            hubApi.login({ appName: 'KorriPay' }).catch(() => {
-                showToast('Nimiq Pay connection cancelled or closed');
-            });
-        }
-    } else {
-        const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
-        if (addr) setAddress(addr);
-    }
 }
 
 function setAddress(newAddr) {
@@ -677,7 +708,7 @@ function setupSendModal() {
     document.getElementById('btn-numpad-backspace')?.addEventListener('click', backspaceNumpadAmount);
 
     if (btnHub) {
-        btnHub.addEventListener('click', () => {
+        btnHub.addEventListener('click', async () => {
             const recipient = recipientInput ? recipientInput.value.trim() : '';
             const amount = parseFloat(state.sendAmountStr) || 0;
             const message = messageInput ? messageInput.value.trim() : '';
@@ -694,19 +725,22 @@ function setupSendModal() {
 
             const luna = nimToLuna(amount);
             
-            if (hubApi) {
-                hubApi.checkout({
-                    appName: 'KorriPay',
-                    recipient: recipient,
-                    value: luna,
-                    extraData: message
-                }).catch(err => {
-                    console.warn('Mini App SDK checkout launch:', err);
-                    window.open(`https://hub.nimiq.com/checkout?recipient=${recipient}&value=${luna}&message=${encodeURIComponent(message)}`, '_blank');
-                });
-            } else {
-                window.open(`https://hub.nimiq.com/checkout?recipient=${recipient}&value=${luna}&message=${encodeURIComponent(message)}`, '_blank');
+            try {
+                const nimiq = await getNativeNimiqProvider();
+                if (nimiq && typeof nimiq.sendTransaction === 'function') {
+                    await nimiq.sendTransaction({
+                        appName: 'KorriPay',
+                        recipient: recipient,
+                        value: luna,
+                        extraData: message
+                    });
+                    return;
+                }
+            } catch (err) {
+                console.warn('Native transaction checkout note:', err);
             }
+
+            window.open(`https://hub.nimiq.com/checkout?recipient=${recipient}&value=${luna}&message=${encodeURIComponent(message)}`, '_blank');
         });
     }
 
@@ -823,6 +857,7 @@ function setupInvoiceBuilder() {
             document.getElementById('prev-inv-client').textContent = client;
             document.getElementById('prev-inv-merchant-addr').textContent = formatNimiqAddress(merchantAddr);
             document.getElementById('prev-inv-date').textContent = new Date().toLocaleDateString();
+            document.getElementById('prev-inv-[#prev-inv-total-usd]');
             document.getElementById('prev-inv-total-usd').textContent = formatUSD(totalUsd);
             document.getElementById('prev-inv-total-nim').textContent = `${formatNIM(totalNim)} NIM`;
 
