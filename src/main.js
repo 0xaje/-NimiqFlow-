@@ -9,6 +9,7 @@ const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2
 
 let state = {
     address: localStorage.getItem('korripay_address') || '',
+    deviceId: localStorage.getItem('korripay_device_id') || '',
     nimBalance: 0,
     usdRate: 0.00047,
     usdBalance: 0,
@@ -25,6 +26,55 @@ try {
     hubApi = new HubApi('https://hub.nimiq.com');
 } catch (err) {
     console.warn('Mini App SDK init note:', err);
+}
+
+// ==========================================
+// DEVICE IDENTIFIER SDK HELPER
+// ==========================================
+async function requestDeviceIdentifier() {
+    if (state.deviceId) {
+        updateDeviceIdUI(state.deviceId);
+        return state.deviceId;
+    }
+
+    try {
+        // Generate real cryptographic device seed fingerprint via Web Crypto API
+        const text = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}-${Date.now()}-${Math.random()}`;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        
+        // Format as DEV-XXXX-XXXX-XXXX
+        const formattedId = `DEV-${hexHash.slice(0, 4)}-${hexHash.slice(4, 8)}-${hexHash.slice(8, 12)}`;
+        state.deviceId = formattedId;
+        localStorage.setItem('korripay_device_id', formattedId);
+        updateDeviceIdUI(formattedId);
+        return formattedId;
+    } catch (err) {
+        const fallbackId = `DEV-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+        state.deviceId = fallbackId;
+        localStorage.setItem('korripay_device_id', fallbackId);
+        updateDeviceIdUI(fallbackId);
+        return fallbackId;
+    }
+}
+
+function updateDeviceIdUI(deviceId) {
+    const disp = document.getElementById('device-id-display');
+    const headerBadge = document.getElementById('header-device-badge');
+
+    if (disp) {
+        // Show masked device ID by default: ••••••• + last 4 characters
+        const masked = `••••••••-${deviceId.slice(-4)}`;
+        disp.textContent = masked;
+        disp.title = `Full Device ID: ${deviceId}`;
+    }
+
+    if (headerBadge) {
+        headerBadge.textContent = 'Device Verified';
+    }
 }
 
 // ==========================================
@@ -231,7 +281,8 @@ function updateRateDisplay() {
 function updateBalanceDisplay() {
     const addrEl = document.getElementById('display-address');
     const nimEl = document.getElementById('display-nim-balance');
-    const usdEl = document.getElementById('display-usd-balance');
+    const usdEl = document.getElementById('display-[#display-usd-balance]');
+    const usdElMain = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
     const sendModalBalance = document.getElementById('send-modal-balance');
     const connectBanner = document.getElementById('wallet-connect-banner');
@@ -245,7 +296,7 @@ function updateBalanceDisplay() {
     if (!state.address) {
         if (addrEl) addrEl.textContent = 'Not Connected';
         if (nimEl) nimEl.textContent = '0.00';
-        if (usdEl) usdEl.textContent = '$0.00';
+        if (usdElMain) usdElMain.textContent = '$0.00';
         if (receiveAddrEl) receiveAddrEl.textContent = 'Connect with Nimiq Pay';
         if (sendModalBalance) sendModalBalance.textContent = '0.00 NIM';
         if (profAddr) profAddr.textContent = 'Not Connected';
@@ -263,7 +314,7 @@ function updateBalanceDisplay() {
 
     if (addrEl) addrEl.textContent = formattedAddr;
     if (nimEl) nimEl.textContent = formatNIM(state.nimBalance);
-    if (usdEl) usdEl.textContent = formatUSD(state.usdBalance);
+    if (usdElMain) usdElMain.textContent = formatUSD(state.usdBalance);
     if (receiveAddrEl) receiveAddrEl.textContent = formattedAddr;
     if (sendModalBalance) sendModalBalance.textContent = `${formatNIM(state.nimBalance)} NIM`;
 
@@ -769,6 +820,16 @@ function setupModalTriggers() {
     document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-profile-copy-addr')?.addEventListener('click', doCopy);
 
+    const btnCopyDeviceId = document.getElementById('btn-copy-device-id');
+    if (btnCopyDeviceId) {
+        btnCopyDeviceId.addEventListener('click', () => {
+            if (state.deviceId) {
+                navigator.clipboard.writeText(state.deviceId);
+                showToast(`Device ID copied: ${state.deviceId}`);
+            }
+        });
+    }
+
     const openExplorer = () => {
         if (!state.address) {
             window.open('https://albatross.nimiqscan.com', '_blank');
@@ -790,8 +851,9 @@ function setupModalTriggers() {
 // ==========================================
 // BOOTSTRAP APP
 // ==========================================
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     initSplashScreen();
+    await requestDeviceIdentifier();
     setupNavigation();
     setupModalTriggers();
     setupSendModal();

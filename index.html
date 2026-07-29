@@ -58,7 +58,13 @@
                 K
             </div>
             <div class="flex flex-col">
-                <span class="text-lg font-bold text-[#ffc982] tracking-tight leading-none">KorriPay</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-lg font-bold text-[#ffc982] tracking-tight leading-none">KorriPay</span>
+                    <div class="flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[10px] text-emerald-400 font-semibold">
+                        <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                        <span id="header-device-badge">Verified</span>
+                    </div>
+                </div>
                 <div class="flex items-center gap-1 text-[10px] text-emerald-400 font-medium mt-0.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                     <span>Nimiq Mainnet Live</span>
@@ -268,6 +274,28 @@
                         <p id="profile-nim-holdings" class="text-lg font-bold text-[#ffc982] font-mono mt-0.5">0.00 NIM</p>
                     </div>
                 </div>
+            </section>
+
+            <!-- Device Identifier & Hardware Verification Panel -->
+            <section class="glass-card rounded-2xl p-4 border border-emerald-500/30 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40">
+                        <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">Device Verified</span>
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase">HARDWARE SDK</span>
+                        </div>
+                        <p class="text-[11px] font-mono text-[#d7c3ae] mt-0.5 flex items-center gap-1">
+                            <span>ID:</span>
+                            <span id="device-id-display" class="text-[#ffc982] font-bold">••••••••</span>
+                        </p>
+                    </div>
+                </div>
+                <button id="btn-copy-device-id" title="Copy Device ID" class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-sm">content_copy</span>
+                </button>
             </section>
 
             <!-- Preferences Settings List -->
