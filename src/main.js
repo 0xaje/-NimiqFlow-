@@ -436,9 +436,6 @@ function setupDeveloperMode() {
 
         const handleSwitch = (selectedNetwork) => {
             setNetworkEnvironment(selectedNetwork);
-            state.nimBalance = 0;
-            state.usdBalance = 0;
-            state.transactions = [];
             updateBalanceDisplay();
             renderTransactions();
             renderAnalyticsChart();
@@ -456,9 +453,6 @@ function setupDeveloperMode() {
         headerNetworkBadge.addEventListener('click', () => {
             const nextNet = config.nimiqNetwork === 'TestAlbatross' ? 'MainAlbatross' : 'TestAlbatross';
             setNetworkEnvironment(nextNet);
-            state.nimBalance = 0;
-            state.usdBalance = 0;
-            state.transactions = [];
             updateBalanceDisplay();
             renderTransactions();
             renderAnalyticsChart();
@@ -1006,16 +1000,15 @@ async function fetchExchangeRateData() {
 async function fetchNimiqAccountData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
-    const rawBalance = await fetchRpcAccountBalance(state.address);
-    const nimVal = lunaToNim(rawBalance);
 
     if (activeNet === 'MainAlbatross') {
+        const rawBalance = await fetchRpcAccountBalance(state.address);
+        const nimVal = lunaToNim(rawBalance);
         state.balances.MainAlbatross = nimVal;
         localStorage.setItem('nimiqflow_bal_MainAlbatross', nimVal.toString());
     } else {
-        if (nimVal > 0) {
-            state.balances.TestAlbatross = nimVal;
-            localStorage.setItem('nimiqflow_bal_TestAlbatross', nimVal.toString());
+        if (typeof state.balances.TestAlbatross === 'undefined') {
+            state.balances.TestAlbatross = 0;
         }
     }
     updateBalanceDisplay();
@@ -1024,19 +1017,11 @@ async function fetchNimiqAccountData() {
 async function fetchNimiqTransactionsData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
-    const rpcTxs = await fetchRpcTransactions(state.address);
 
     if (activeNet === 'MainAlbatross') {
+        const rpcTxs = await fetchRpcTransactions(state.address);
         state.transactions.MainAlbatross = Array.isArray(rpcTxs) ? rpcTxs : [];
         localStorage.setItem('nimiqflow_txs_MainAlbatross', JSON.stringify(state.transactions.MainAlbatross));
-    } else {
-        if (Array.isArray(rpcTxs) && rpcTxs.length > 0) {
-            const existing = state.transactions.TestAlbatross || [];
-            const existingHashes = new Set(existing.map(t => t.hash));
-            const newRpcTxs = rpcTxs.filter(t => !existingHashes.has(t.hash));
-            state.transactions.TestAlbatross = [...newRpcTxs, ...existing];
-            localStorage.setItem('nimiqflow_txs_TestAlbatross', JSON.stringify(state.transactions.TestAlbatross));
-        }
     }
     renderTransactions();
     renderAnalyticsChart();
