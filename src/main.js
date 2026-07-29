@@ -7,9 +7,116 @@ import HubApi from '@nimiq/hub-api';
 const RPC_ENDPOINT = 'https://rpc.nimiqwatch.com';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2&vs_currencies=usd';
 
+// Internationalization (i18n) Dictionary
+const TRANSLATIONS = {
+    en: {
+        mini_app_subtitle: 'Nimiq Pay Mini App',
+        splash_initializing: 'Initializing Mini App SDK...',
+        device_verified: 'Device Verified',
+        mainnet_live: 'Nimiq Mainnet Live',
+        connect: 'Connect with Nimiq Pay',
+        banner_desc: 'Connect via Mini App SDK to inspect live mainnet balance, send NIM payments, and issue smart invoices.',
+        total_balance: 'Total Balance (USD)',
+        not_connected: 'Not Connected',
+        nim_balance: 'Nimiq Crypto Balance',
+        send: 'Send',
+        receive: 'Receive',
+        invoice: 'Invoice',
+        qr_pay: 'QR Pay',
+        smart_invoice: 'Smart Invoice Generator',
+        invoice_card_desc: 'Generate itemized invoices with live USD/NIM calculations, scan-to-pay QR requests, and PDF export.',
+        create_invoice: 'Create Smart Invoice',
+        recent_activity: 'Recent Activity',
+        view_all: 'View All',
+        connect_prompt: 'Connect with Nimiq Pay to load mainnet transactions.',
+        history: 'Transaction History',
+        all: 'All',
+        sent: 'Sent',
+        received: 'Received',
+        monthly_insight: 'Monthly Insight',
+        total_volume: 'Total Transaction Volume',
+        net_worth: 'Net Worth (USD)',
+        holdings: 'Holdings (NIM)',
+        language_label: 'App Language',
+        disconnect_session: 'Disconnect Nimiq Pay Session',
+        home: 'Home',
+        pay: 'Pay',
+        profile: 'Profile'
+    },
+    de: {
+        mini_app_subtitle: 'Nimiq Pay Mini-App',
+        splash_initializing: 'Mini App SDK wird initialisiert...',
+        device_verified: 'Gerät Bestätigt',
+        mainnet_live: 'Nimiq Mainnet Live',
+        connect: 'Mit Nimiq Pay verbinden',
+        banner_desc: 'Verbinden Sie sich über das Mini App SDK, um das Guthaben einzusehen, NIM zu senden und Rechnungen zu erstellen.',
+        total_balance: 'Gesamtguthaben (USD)',
+        not_connected: 'Nicht verbunden',
+        nim_balance: 'Nimiq Krypto-Guthaben',
+        send: 'Senden',
+        receive: 'Empfangen',
+        invoice: 'Rechnung',
+        qr_pay: 'QR Bezahlen',
+        smart_invoice: 'Intelligenter Rechnungsgenerator',
+        invoice_card_desc: 'Erstellen Sie detaillierte Rechnungen mit Live-USD/NIM-Berechnungen und QR-Code-Zahlung.',
+        create_invoice: 'Rechnung erstellen',
+        recent_activity: 'Letzte Aktivitäten',
+        view_all: 'Alle anzeigen',
+        connect_prompt: 'Mit Nimiq Pay verbinden, um Transaktionen zu laden.',
+        history: 'Transaktionsverlauf',
+        all: 'Alle',
+        sent: 'Gesendet',
+        received: 'Empfangen',
+        monthly_insight: 'Monatlicher Einblick',
+        total_volume: 'Gesamtes Transaktionsvolumen',
+        net_worth: 'Gesamtwert (USD)',
+        holdings: 'Bestände (NIM)',
+        language_label: 'App-Sprache',
+        disconnect_session: 'Nimiq Pay Sitzung trennen',
+        home: 'Start',
+        pay: 'Zahlen',
+        profile: 'Profil'
+    },
+    es: {
+        mini_app_subtitle: 'Mini App Nimiq Pay',
+        splash_initializing: 'Inicializando Mini App SDK...',
+        device_verified: 'Dispositivo Verificado',
+        mainnet_live: 'Nimiq Mainnet en Vivo',
+        connect: 'Conectar con Nimiq Pay',
+        banner_desc: 'Conéctese mediante el SDK para ver saldo en vivo, enviar NIM y crear facturas inteligentes.',
+        total_balance: 'Saldo Total (USD)',
+        not_connected: 'No conectado',
+        nim_balance: 'Saldo Nimiq Cripto',
+        send: 'Enviar',
+        receive: 'Recibir',
+        invoice: 'Factura',
+        qr_pay: 'Pago QR',
+        smart_invoice: 'Generador de Facturas Inteligente',
+        invoice_card_desc: 'Genere facturas detalladas con cálculos USD/NIM en vivo y código QR de pago.',
+        create_invoice: 'Crear Factura Inteligente',
+        recent_activity: 'Actividad Reciente',
+        view_all: 'Ver Todo',
+        connect_prompt: 'Conéctese con Nimiq Pay para cargar transacciones.',
+        history: 'Historial de Transacciones',
+        all: 'Todo',
+        sent: 'Enviado',
+        received: 'Recibido',
+        monthly_insight: 'Resumen Mensual',
+        total_volume: 'Volumen Total de Transacciones',
+        net_worth: 'Patrimonio (USD)',
+        holdings: 'Criptoactivos (NIM)',
+        language_label: 'Idioma de la App',
+        disconnect_session: 'Desconectar Sesión Nimiq Pay',
+        home: 'Inicio',
+        pay: 'Pagar',
+        profile: 'Perfil'
+    }
+};
+
 let state = {
     address: localStorage.getItem('korripay_address') || '',
     deviceId: localStorage.getItem('korripay_device_id') || '',
+    currentLang: localStorage.getItem('korripay_lang') || getInitialLanguage(),
     nimBalance: 0,
     usdRate: 0.00047,
     usdBalance: 0,
@@ -29,6 +136,60 @@ try {
 }
 
 // ==========================================
+// LANGUAGE DETECTION & I18N CONTROLLER
+// ==========================================
+function getInitialLanguage() {
+    // Check window.nimiqPay.language, fallback to navigator.language
+    const detected = (window.nimiqPay && window.nimiqPay.language) || navigator.language || 'en';
+    const langCode = detected.toLowerCase().substring(0, 2);
+    if (['en', 'de', 'es'].includes(langCode)) {
+        return langCode;
+    }
+    return 'en';
+}
+
+function applyLanguage(lang) {
+    const targetLang = ['en', 'de', 'es'].includes(lang) ? lang : 'en';
+    state.currentLang = targetLang;
+    localStorage.setItem('korripay_lang', targetLang);
+
+    const dict = TRANSLATIONS[targetLang] || TRANSLATIONS.en;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+            el.textContent = dict[key];
+        }
+    });
+
+    const langNameEl = document.getElementById('current-language-name');
+    if (langNameEl) {
+        const names = { en: 'English (en)', de: 'Deutsch (de)', es: 'Español (es)' };
+        langNameEl.textContent = names[targetLang] || 'English (en)';
+    }
+
+    // Highlight active switcher button
+    document.querySelectorAll('.btn-lang-switch').forEach(btn => {
+        const bLang = btn.getAttribute('data-lang');
+        if (bLang === targetLang) {
+            btn.className = 'btn-lang-switch px-2.5 py-1 rounded-lg bg-[#f6a623] text-[#462b00] font-bold text-xs font-mono shadow-md active:scale-95';
+        } else {
+            btn.className = 'btn-lang-switch px-2.5 py-1 rounded-lg bg-white/10 text-xs font-mono hover:bg-[#f6a623] hover:text-[#462b00] transition-colors active:scale-95';
+        }
+    });
+}
+
+function setupLanguageSwitchers() {
+    document.querySelectorAll('.btn-lang-switch').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            applyLanguage(lang);
+            showToast(`Language switched to ${lang.toUpperCase()}`);
+        });
+    });
+}
+
+// ==========================================
 // DEVICE IDENTIFIER SDK HELPER
 // ==========================================
 async function requestDeviceIdentifier() {
@@ -38,7 +199,6 @@ async function requestDeviceIdentifier() {
     }
 
     try {
-        // Generate real cryptographic device seed fingerprint via Web Crypto API
         const text = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}-${Date.now()}-${Math.random()}`;
         const encoder = new TextEncoder();
         const data = encoder.encode(text);
@@ -46,7 +206,6 @@ async function requestDeviceIdentifier() {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
         
-        // Format as DEV-XXXX-XXXX-XXXX
         const formattedId = `DEV-${hexHash.slice(0, 4)}-${hexHash.slice(4, 8)}-${hexHash.slice(8, 12)}`;
         state.deviceId = formattedId;
         localStorage.setItem('korripay_device_id', formattedId);
@@ -63,17 +222,10 @@ async function requestDeviceIdentifier() {
 
 function updateDeviceIdUI(deviceId) {
     const disp = document.getElementById('device-id-display');
-    const headerBadge = document.getElementById('header-device-badge');
-
     if (disp) {
-        // Show masked device ID by default: ••••••• + last 4 characters
         const masked = `••••••••-${deviceId.slice(-4)}`;
         disp.textContent = masked;
         disp.title = `Full Device ID: ${deviceId}`;
-    }
-
-    if (headerBadge) {
-        headerBadge.textContent = 'Device Verified';
     }
 }
 
@@ -281,7 +433,6 @@ function updateRateDisplay() {
 function updateBalanceDisplay() {
     const addrEl = document.getElementById('display-address');
     const nimEl = document.getElementById('display-nim-balance');
-    const usdEl = document.getElementById('display-[#display-usd-balance]');
     const usdElMain = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
     const sendModalBalance = document.getElementById('send-modal-balance');
@@ -294,16 +445,24 @@ function updateBalanceDisplay() {
     const profHoldings = document.getElementById('profile-nim-holdings');
 
     if (!state.address) {
-        if (addrEl) addrEl.textContent = 'Not Connected';
+        if (addrEl) {
+            addrEl.textContent = TRANSLATIONS[state.currentLang]?.not_connected || 'Not Connected';
+        }
         if (nimEl) nimEl.textContent = '0.00';
         if (usdElMain) usdElMain.textContent = '$0.00';
-        if (receiveAddrEl) receiveAddrEl.textContent = 'Connect with Nimiq Pay';
+        if (receiveAddrEl) {
+            receiveAddrEl.textContent = TRANSLATIONS[state.currentLang]?.connect || 'Connect with Nimiq Pay';
+        }
         if (sendModalBalance) sendModalBalance.textContent = '0.00 NIM';
-        if (profAddr) profAddr.textContent = 'Not Connected';
+        if (profAddr) {
+            profAddr.textContent = TRANSLATIONS[state.currentLang]?.not_connected || 'Not Connected';
+        }
         if (profNet) profNet.textContent = '$0.00';
         if (profHoldings) profHoldings.textContent = '0.00 NIM';
         if (connectBanner) connectBanner.classList.remove('hidden');
-        if (btnConnectLabel) btnConnectLabel.textContent = 'Connect with Nimiq Pay';
+        if (btnConnectLabel) {
+            btnConnectLabel.textContent = TRANSLATIONS[state.currentLang]?.connect || 'Connect with Nimiq Pay';
+        }
         return;
     }
 
@@ -331,11 +490,13 @@ function renderTransactions() {
 
     if (!container) return;
 
+    const dict = TRANSLATIONS[state.currentLang] || TRANSLATIONS.en;
+
     if (!state.address) {
         const emptyHtml = `
             <div class="p-5 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-xl text-[#ffc982] mb-1">link_off</span>
-                <p>Connect with Nimiq Pay to load mainnet transactions.</p>
+                <p>${dict.connect_prompt}</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -390,7 +551,7 @@ function renderTransactions() {
                     </div>
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-white group-hover:text-[#ffc982] transition-colors">
-                            ${isIncoming ? 'Received Payment' : 'Sent Payment'}
+                            ${isIncoming ? (dict.received || 'Received Payment') : (dict.sent || 'Sent Payment')}
                         </span>
                         <span class="text-[10px] text-[#d7c3ae]">${formatDate(tx.timestamp)}</span>
                     </div>
@@ -853,6 +1014,8 @@ function setupModalTriggers() {
 // ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
     initSplashScreen();
+    applyLanguage(state.currentLang);
+    setupLanguageSwitchers();
     await requestDeviceIdentifier();
     setupNavigation();
     setupModalTriggers();
