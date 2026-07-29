@@ -421,9 +421,21 @@ function setupDeveloperMode() {
     const headerNetworkBadge = document.getElementById('header-network-badge');
 
     const updateNetworkBadges = (netName) => {
-        if (badgeNetwork) badgeNetwork.textContent = netName;
+        const isMain = netName === 'MainAlbatross';
+        if (badgeNetwork) {
+            badgeNetwork.textContent = netName;
+            badgeNetwork.className = isMain 
+                ? 'text-[10px] text-amber-300 font-semibold uppercase bg-amber-500/20 border border-amber-400/40 px-2 py-0.5 rounded-full'
+                : 'text-[10px] text-sky-300 font-semibold uppercase bg-sky-500/20 border border-sky-400/40 px-2 py-0.5 rounded-full';
+        }
         if (headerNetworkName) headerNetworkName.textContent = netName;
         if (heroNetworkText) heroNetworkText.textContent = netName;
+
+        if (headerNetworkBadge) {
+            headerNetworkBadge.className = isMain
+                ? 'flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 px-2.5 py-0.5 rounded-full text-[10px] text-amber-300 font-mono font-bold cursor-pointer hover:scale-105 transition-all shadow-sm'
+                : 'flex items-center gap-1 bg-sky-500/20 border border-sky-400/40 px-2.5 py-0.5 rounded-full text-[10px] text-sky-300 font-mono font-bold cursor-pointer hover:scale-105 transition-all shadow-sm';
+        }
     };
 
     if (radioTest && radioMain) {
