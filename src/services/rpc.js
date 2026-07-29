@@ -25,6 +25,33 @@ export async function queryRpc(method, params = []) {
     return null;
 }
 
+export async function claimFaucetTokens(address, amount = 10000) {
+    if (!address) throw new Error("Wallet address is required for faucet claim");
+    const cleanAddress = address.replace(/\s+/g, '');
+
+    const params = new URLSearchParams();
+    params.append('address', cleanAddress);
+    params.append('amount', amount.toString());
+
+    const res = await fetch('https://faucet.pos.nimiq-testnet.com/tapit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params
+    });
+
+    if (!res.ok) {
+        throw new Error(`Faucet API returned HTTP ${res.status}`);
+    }
+
+    try {
+        return await res.json();
+    } catch {
+        return { success: true };
+    }
+}
+
 export async function fetchRpcAccountBalance(address) {
     if (!address) return 0;
     const clean = address.replace(/\s+/g, '');

@@ -6,7 +6,8 @@ import {
     fetchRpcAccountBalance, 
     fetchRpcTransactions, 
     fetchRpcBlockNumber, 
-    fetchRpcConsensusStatus 
+    fetchRpcConsensusStatus,
+    claimFaucetTokens
 } from './services/rpc.js';
 import { getNativeNimiqProvider } from './services/wallet.js';
 
@@ -126,23 +127,33 @@ let state = {
 };
 
 // ==========================================
-// TESTNET FAUCET CONTROLLER
+// AUTOMATED TESTNET FAUCET CONTROLLER (/tapit)
 // ==========================================
-function openTestnetFaucet() {
-    if (state.address) {
+async function handleAutomatedFaucetClaim() {
+    if (!state.address) {
+        showToast('Please connect with Nimiq Pay first or enter a wallet address');
+        window.open(config.faucetUrl, '_blank');
+        return;
+    }
+
+    try {
+        showToast('Requesting 10,000 Test NIM from Faucet API...');
+        await claimFaucetTokens(state.address, 10000);
+        showToast('Claim Successful! 10,000 Test NIM deposited.');
+        setTimeout(() => refreshAllData(), 1200);
+    } catch (err) {
+        console.warn('Faucet API call note:', err);
+        showToast('Opening Nimiq Testnet Faucet web page...');
         const clean = state.address.replace(/\s+/g, '');
         navigator.clipboard.writeText(clean);
-        showToast('Nimiq address copied! Opening Testnet Faucet...');
-    } else {
-        showToast('Opening Nimiq Testnet Faucet...');
+        window.open(config.faucetUrl, '_blank');
     }
-    window.open(config.faucetUrl, '_blank');
 }
 
 function setupFaucetTriggers() {
-    document.getElementById('btn-hero-claim-faucet')?.addEventListener('click', openTestnetFaucet);
-    document.getElementById('btn-open-testnet-faucet')?.addEventListener('click', openTestnetFaucet);
-    document.getElementById('btn-receive-modal-faucet')?.addEventListener('click', openTestnetFaucet);
+    document.getElementById('btn-hero-claim-faucet')?.addEventListener('click', handleAutomatedFaucetClaim);
+    document.getElementById('btn-open-testnet-faucet')?.addEventListener('click', handleAutomatedFaucetClaim);
+    document.getElementById('btn-receive-modal-faucet')?.addEventListener('click', handleAutomatedFaucetClaim);
 }
 
 // ==========================================
@@ -1099,6 +1110,7 @@ function setupModalTriggers() {
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
+    document.getElementById('btn-open-[#request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
     document.getElementById('btn-open-request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
 
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
@@ -1108,7 +1120,6 @@ function setupModalTriggers() {
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
     document.getElementById('btn-close-request-pay')?.addEventListener('click', () => closeModal('modal-request-pay'));
-    document.getElementById('btn-close-[#invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
 

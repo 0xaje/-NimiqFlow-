@@ -15,6 +15,7 @@ export const config = {
     rpcUrl: getEnvVar('VITE_RPC_URL', 'https://rpc.pos.nimiq-testnet.com'),
     explorerUrl: getEnvVar('VITE_EXPLORER_URL', 'https://albatross.nimiqscan.com'),
     faucetUrl: 'https://faucet.pos.nimiq-testnet.com',
+    faucetApiUrl: 'https://faucet.pos.nimiq-testnet.com/tapit',
     coingeckoUrl: getEnvVar('VITE_COINGECKO', 'https://api.coingecko.com/api/v3')
 };
 
