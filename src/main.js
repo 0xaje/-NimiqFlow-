@@ -127,33 +127,88 @@ let state = {
 };
 
 // ==========================================
-// AUTOMATED TESTNET FAUCET CONTROLLER (/tapit)
+// TESTNET FAUCET MODAL & API CONTROLLER
 // ==========================================
-async function handleAutomatedFaucetClaim() {
-    if (!state.address) {
-        showToast('Please connect with Nimiq Pay first or enter a wallet address');
-        window.open(config.faucetUrl, '_blank');
-        return;
+function openFaucetModal() {
+    const inputAddr = document.getElementById('faucet-input-address');
+    if (inputAddr && state.address) {
+        inputAddr.value = state.address;
     }
-
-    try {
-        showToast('Requesting 10,000 Test NIM from Faucet API...');
-        await claimFaucetTokens(state.address, 10000);
-        showToast('Claim Successful! 10,000 Test NIM deposited.');
-        setTimeout(() => refreshAllData(), 1200);
-    } catch (err) {
-        console.warn('Faucet API call note:', err);
-        showToast('Opening Nimiq Testnet Faucet web page...');
-        const clean = state.address.replace(/\s+/g, '');
-        navigator.clipboard.writeText(clean);
-        window.open(config.faucetUrl, '_blank');
-    }
+    openModal('modal-faucet');
 }
 
 function setupFaucetTriggers() {
-    document.getElementById('btn-hero-claim-faucet')?.addEventListener('click', handleAutomatedFaucetClaim);
-    document.getElementById('btn-open-testnet-faucet')?.addEventListener('click', handleAutomatedFaucetClaim);
-    document.getElementById('btn-receive-modal-faucet')?.addEventListener('click', handleAutomatedFaucetClaim);
+    document.getElementById('btn-hero-claim-faucet')?.addEventListener('click', openFaucetModal);
+    document.getElementById('btn-open-testnet-faucet')?.addEventListener('click', openFaucetModal);
+    document.getElementById('btn-receive-modal-faucet')?.addEventListener('click', openFaucetModal);
+    document.getElementById('btn-close-faucet')?.addEventListener('click', () => closeModal('modal-faucet'));
+
+    const btnSubmit = document.getElementById('btn-submit-faucet-claim');
+    const btnOpenWeb = document.getElementById('btn-open-web-faucet');
+    const inputAddr = document.getElementById('faucet-input-address');
+    const statusBox = document.getElementById('faucet-status-output');
+
+    const setStatus = (msg, type = 'info') => {
+        if (!statusBox) return;
+        statusBox.classList.remove('hidden', 'bg-sky-500/15', 'border-sky-500/30', 'text-sky-300', 'bg-emerald-500/15', 'border-emerald-500/30', 'text-emerald-300', 'bg-red-500/15', 'border-red-500/30', 'text-red-300');
+        
+        if (type === 'loading') {
+            statusBox.className = 'p-3 rounded-xl text-xs font-mono border bg-sky-500/15 border-sky-500/30 text-sky-300 flex items-center gap-2';
+            statusBox.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span> <span>${msg}</span>`;
+        } else if (type === 'success') {
+            statusBox.className = 'p-3 rounded-xl text-xs font-mono border bg-emerald-500/15 border-emerald-500/30 text-emerald-300 flex items-center gap-2';
+            statusBox.innerHTML = `<span class="material-symbols-outlined text-sm">check_circle</span> <span>${msg}</span>`;
+        } else {
+            statusBox.className = 'p-3 rounded-xl text-xs font-mono border bg-red-500/15 border-red-500/30 text-red-300 flex items-center gap-2';
+            statusBox.innerHTML = `<span class="material-symbols-outlined text-sm">error</span> <span>${msg}</span>`;
+        }
+    };
+
+    if (btnSubmit) {
+        btnSubmit.addEventListener('click', async () => {
+            const targetAddr = inputAddr ? inputAddr.value.trim() : state.address;
+            if (!targetAddr) {
+                showToast('Please enter a valid Nimiq Testnet address');
+                setStatus('Please enter or connect a Nimiq wallet address', 'error');
+                return;
+            }
+
+            setStatus('Claiming 10,000 Test NIM from faucet API...', 'loading');
+
+            try {
+                await claimFaucetTokens(targetAddr, 10000);
+                setStatus('Deposit Success! 10,000 Test NIM sent to address.', 'success');
+                showToast('10,000 Test NIM deposited!');
+
+                if (!state.address) {
+                    setAddress(targetAddr);
+                }
+
+                setTimeout(() => refreshAllData(), 1500);
+            } catch (err) {
+                console.warn('Direct Faucet API note:', err);
+                setStatus('Faucet API submitted. Opening web faucet page as backup...', 'info');
+                showToast('Opening Nimiq Testnet Faucet page...');
+                const clean = targetAddr.replace(/\s+/g, '');
+                navigator.clipboard.writeText(clean);
+                window.open(config.faucetUrl, '_blank');
+            }
+        });
+    }
+
+    if (btnOpenWeb) {
+        btnOpenWeb.addEventListener('click', () => {
+            const targetAddr = inputAddr ? inputAddr.value.trim() : state.address;
+            if (targetAddr) {
+                const clean = targetAddr.replace(/\s+/g, '');
+                navigator.clipboard.writeText(clean);
+                showToast('Address copied! Opening Testnet Faucet webpage...');
+            } else {
+                showToast('Opening Testnet Faucet webpage...');
+            }
+            window.open(config.faucetUrl, '_blank');
+        });
+    }
 }
 
 // ==========================================
@@ -1110,7 +1165,6 @@ function setupModalTriggers() {
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
-    document.getElementById('btn-open-[#request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
     document.getElementById('btn-open-request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
 
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
