@@ -526,6 +526,15 @@ function setupRequestPaymentModal() {
         });
     }
 
+    const btnShareLink = document.getElementById('btn-share-request-link');
+    if (btnShareLink) {
+        btnShareLink.addEventListener('click', () => {
+            if (state.lastGeneratedRequestUrl) {
+                sharePaymentLink('Nimiq Flow Payment Request', 'Pay via Nimiq Flow checkout:', state.lastGeneratedRequestUrl);
+            }
+        });
+    }
+
     updateUsdCalc();
 }
 
@@ -747,6 +756,139 @@ function showToast(message) {
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2500);
+}
+
+function validateNimiqAddress(addr) {
+    if (!addr) return false;
+    const clean = addr.replace(/\s+/g, '').toUpperCase();
+    return /^NQ[0-9A-Z]{34}$/.test(clean);
+}
+
+async function sharePaymentLink(title, text, url) {
+    if (navigator.share) {
+        try {
+            await navigator.share({ title, text, url });
+            showToast('Shared successfully!');
+            return;
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.warn('Share error:', err);
+            } else {
+                return;
+            }
+        }
+    }
+    const content = url || text || title;
+    if (content) {
+        await navigator.clipboard.writeText(content);
+        showToast('Link copied to clipboard!');
+    }
+}
+
+function exportTransactionsCSV() {
+    const txs = state.transactions;
+    if (!txs || txs.length === 0) {
+        showToast('No transaction data available to export');
+        return;
+    }
+
+    let csvContent = 'data:text/csv;charset=utf-8,Transaction Hash,Type,Amount (NIM),Amount (USD),Block Height,Date\n';
+    txs.forEach(tx => {
+        const hash = tx.hash || tx.id || 'N/A';
+        const isReceived = (tx.recipient || '').replace(/\s+/g, '') === (state.address || '').replace(/\s+/g, '');
+        const type = isReceived ? 'Received' : 'Sent';
+        const nimVal = lunaToNim(tx.value || 0);
+        const usdVal = (nimVal * state.usdRate).toFixed(2);
+        const block = tx.blockNumber || tx.block || 'N/A';
+        const date = tx.timestamp ? formatDate(tx.timestamp * 1000) : 'N/A';
+
+        csvContent += `"${hash}","${type}",${nimVal},${usdVal},"${block}","${date}"\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `nimiq_flow_transactions_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    showToast('Transaction CSV exported successfully!');
+}
+
+function parseInvoicePrompt(promptText) {
+    if (!promptText || !promptText.trim()) {
+        showToast('Please type a natural language invoice instruction');
+        return;
+    }
+
+    const text = promptText.trim();
+    
+    // Extract Nimiq address if present
+    const addressMatch = text.match(/NQ\d{2}[0-9A-Z\s]{30,40}/i);
+    if (addressMatch) {
+        const foundAddr = addressMatch[0].trim();
+        const merchantInput = document.getElementById('invoice-merchant-address');
+        if (merchantInput) merchantInput.value = foundAddr;
+    }
+
+    // Extract client name
+    let clientName = 'Client';
+    const clientMatch = text.match(/(?:bill|invoice|to)\s+([A-Z0-9\s._-]+?)(?:\s+(?:for|\$|\d|NIM|USD|with|and|&)|$)/i);
+    if (clientMatch && clientMatch[1]) {
+        const potential = clientMatch[1].trim();
+        if (potential.length > 1 && !potential.toUpperCase().startsWith('NQ')) {
+            clientName = potential;
+        }
+    }
+    const clientInput = document.getElementById('invoice-client');
+    if (clientInput) clientInput.value = clientName;
+
+    // Extract line items
+    const phrases = text.split(/(?:,|\s+and\s+|\s+&\s+)/i);
+    const items = [];
+
+    phrases.forEach(phrase => {
+        const trimmed = phrase.trim();
+        if (!trimmed) return;
+
+        const numMatch = trimmed.match(/(?:(\$\s*\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:NIM|USD|\$)?)/i);
+        let amountUsd = 50.00;
+        let desc = trimmed.replace(/(?:bill|invoice|for|to)\s+/gi, '').trim();
+
+        if (numMatch) {
+            const rawNum = parseFloat(numMatch[1]?.replace('$', '') || numMatch[2] || '50');
+            if (trimmed.toUpperCase().includes('NIM')) {
+                amountUsd = state.usdRate > 0 ? rawNum * state.usdRate : rawNum * 0.00047;
+            } else {
+                amountUsd = rawNum;
+            }
+            desc = desc.replace(/(?:\$\s*\d+(?:\.\d+)?|\d+(?:\.\d+)?\s*(?:NIM|USD|\$)?)/gi, '').trim();
+        }
+
+        desc = desc.replace(/^(?:for|and|&|with)\s+/i, '').trim();
+        if (!desc || desc.length < 2) desc = 'Service Line Item';
+        
+        items.push({ desc: desc.charAt(0).toUpperCase() + desc.slice(1), usd: Math.max(1, amountUsd) });
+    });
+
+    if (items.length > 0) {
+        const itemsList = document.getElementById('invoice-items-list');
+        if (itemsList) {
+            itemsList.innerHTML = items.map(item => `
+                <div class="grid grid-cols-12 gap-2 items-center invoice-item-row">
+                    <input type="text" placeholder="Service description" value="${item.desc}" class="col-span-6 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white item-desc focus:border-[#ffc982] focus:outline-none"/>
+                    <input type="number" step="0.01" placeholder="USD" value="${item.usd.toFixed(2)}" class="col-span-5 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono item-usd focus:border-[#ffc982] focus:outline-none"/>
+                    <button class="col-span-1 text-red-400 hover:text-red-300 btn-remove-item flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </div>
+            `).join('');
+
+            itemsList.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    showToast(`AI parsed ${items.length} line item(s) from prompt!`);
 }
 
 function setAddress(newAddr) {
@@ -1107,6 +1249,33 @@ function setupSendModal() {
         });
     }
 
+    const btnDemoAddr = document.getElementById('btn-send-demo-address');
+    const checksumBadge = document.getElementById('send-address-checksum-badge');
+
+    if (recipientInput) {
+        recipientInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            const isValid = validateNimiqAddress(val);
+            if (checksumBadge) {
+                if (isValid) {
+                    checksumBadge.classList.remove('hidden');
+                    checksumBadge.classList.add('flex');
+                } else {
+                    checksumBadge.classList.add('hidden');
+                    checksumBadge.classList.remove('flex');
+                }
+            }
+        });
+    }
+
+    if (btnDemoAddr && recipientInput) {
+        btnDemoAddr.addEventListener('click', () => {
+            recipientInput.value = formatNimiqAddress('NQ86 6B83 U28U 1L6D G20S RFTX N622 174P J7BA');
+            recipientInput.dispatchEvent(new Event('input'));
+            showToast('Demo address filled!');
+        });
+    }
+
     renderNumpadAmount();
 }
 
@@ -1245,6 +1414,16 @@ function setupInvoiceBuilder() {
         });
     }
 
+    const btnAiParse = document.getElementById('btn-ai-parse-invoice');
+    const aiPromptInput = document.getElementById('ai-invoice-prompt');
+
+    if (btnAiParse) {
+        btnAiParse.addEventListener('click', () => {
+            const promptVal = aiPromptInput ? aiPromptInput.value : '';
+            parseInvoicePrompt(promptVal);
+        });
+    }
+
     calculateInvoiceTotals();
 }
 
@@ -1351,6 +1530,16 @@ function setupModalTriggers() {
 
     document.getElementById('btn-copy-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
+
+    document.getElementById('btn-export-csv')?.addEventListener('click', exportTransactionsCSV);
+
+    document.getElementById('btn-share-receive-address')?.addEventListener('click', () => {
+        if (!state.address) {
+            showToast('Please connect with Nimiq Pay first');
+            return;
+        }
+        sharePaymentLink('Nimiq Flow Address', 'My Nimiq Pay receiving address:', state.address.replace(/\s+/g, ''));
+    });
 
     const btnCopyDeviceId = document.getElementById('btn-copy-device-id');
     if (btnCopyDeviceId) {

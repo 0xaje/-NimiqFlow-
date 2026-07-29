@@ -44,11 +44,6 @@ export async function claimFaucetTokens(address, amount = 10000) {
     params.append('address', cleanAddress);
     params.append('amount', amount.toString());
 
-    // Record local testnet claim credit so balance updates immediately
-    const key = `nimiqflow_faucet_credit_${cleanAddress}`;
-    const currentCredit = Number(localStorage.getItem(key) || 0);
-    localStorage.setItem(key, (currentCredit + amount * 100000).toString());
-
     try {
         const res = await fetch('https://faucet.pos.nimiq-testnet.com/tapit', {
             method: 'POST',
@@ -60,23 +55,23 @@ export async function claimFaucetTokens(address, amount = 10000) {
 
         if (res.ok) {
             try {
-                return await res.json();
+                const data = await res.json();
+                return { success: true, ...data };
             } catch {
                 return { success: true };
             }
         }
     } catch (err) {
-        console.warn('Faucet POST tapit direct CORS/network note:', err);
+        console.warn('Faucet tapit request warning:', err);
     }
 
-    return { success: true, cachedCredit: true };
+    return { success: false, message: 'Faucet request dispatched. On-chain confirmation pending.' };
 }
 
 export async function fetchRpcAccountBalance(address) {
     if (!address) return 0;
     const clean = address.replace(/\s+/g, '');
 
-    // Check RPC balance first
     const result = await queryRpc('getAccountByAddress', [clean]);
     let rpcBalance = 0;
 
@@ -88,17 +83,7 @@ export async function fetchRpcAccountBalance(address) {
         }
     }
 
-    // Add cached local faucet credit if RPC hasn't indexed yet
-    const creditKey = `nimiqflow_faucet_credit_${clean}`;
-    const cachedCredit = Number(localStorage.getItem(creditKey) || 0);
-
-    if (rpcBalance > 0 && rpcBalance >= cachedCredit) {
-        // RPC has indexed the faucet deposit, clear cached credit
-        localStorage.removeItem(creditKey);
-        return rpcBalance;
-    }
-
-    return Math.max(rpcBalance, cachedCredit);
+    return rpcBalance;
 }
 
 export async function fetchRpcTransactions(address, limit = 25) {
