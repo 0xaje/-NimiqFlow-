@@ -395,6 +395,12 @@ function setupDeveloperMode() {
 
         const handleSwitch = (selectedNetwork) => {
             setNetworkEnvironment(selectedNetwork);
+            state.nimBalance = 0;
+            state.usdBalance = 0;
+            state.transactions = [];
+            updateBalanceDisplay();
+            renderTransactions();
+            renderAnalyticsChart();
             updateNetworkBadges(selectedNetwork);
             updateDeveloperDiagnosticsUI();
             refreshAllData();
@@ -409,6 +415,12 @@ function setupDeveloperMode() {
         headerNetworkBadge.addEventListener('click', () => {
             const nextNet = config.nimiqNetwork === 'TestAlbatross' ? 'MainAlbatross' : 'TestAlbatross';
             setNetworkEnvironment(nextNet);
+            state.nimBalance = 0;
+            state.usdBalance = 0;
+            state.transactions = [];
+            updateBalanceDisplay();
+            renderTransactions();
+            renderAnalyticsChart();
             if (radioTest && radioMain) {
                 if (nextNet === 'TestAlbatross') radioTest.checked = true;
                 else radioMain.checked = true;

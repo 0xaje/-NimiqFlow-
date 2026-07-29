@@ -1,12 +1,20 @@
 import { config } from './config.js';
 
-const RPC_ENDPOINTS = [
-    'https://rpc.nimiqwatch.com',
-    'https://rpc.pos.nimiq-testnet.com'
+const MAINNET_RPC_ENDPOINTS = [
+    'https://rpc.nimiqwatch.com'
+];
+
+const TESTNET_RPC_ENDPOINTS = [
+    'https://rpc.pos.nimiq-testnet.com',
+    'https://rpc.nimiqwatch.com'
 ];
 
 export async function queryRpc(method, params = []) {
-    const endpoints = [config.rpcUrl, ...RPC_ENDPOINTS.filter(e => e !== config.rpcUrl)];
+    const isTestnet = config.nimiqNetwork === 'TestAlbatross';
+    const primaryUrl = isTestnet ? 'https://rpc.pos.nimiq-testnet.com' : 'https://rpc.nimiqwatch.com';
+    const fallbackList = isTestnet ? TESTNET_RPC_ENDPOINTS : MAINNET_RPC_ENDPOINTS;
+    
+    const endpoints = Array.from(new Set([config.rpcUrl, primaryUrl, ...fallbackList]));
     
     for (const endpoint of endpoints) {
         try {

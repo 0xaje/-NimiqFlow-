@@ -23,6 +23,12 @@ export function setNetworkEnvironment(networkName) {
     config.nimiqNetwork = networkName;
     localStorage.setItem('nimiqflow_dev_network', networkName);
 
-    // https://rpc.nimiqwatch.com is the high-availability RPC endpoint for Nimiq Mainnet & Testnet
-    config.rpcUrl = 'https://rpc.nimiqwatch.com';
+    if (networkName === 'TestAlbatross') {
+        config.rpcUrl = 'https://rpc.pos.nimiq-testnet.com';
+        config.explorerUrl = 'https://albatross.nimiqscan.com';
+    } else {
+        config.rpcUrl = 'https://rpc.nimiqwatch.com';
+        config.explorerUrl = 'https://albatross.nimiqscan.com';
+    }
 }
+
