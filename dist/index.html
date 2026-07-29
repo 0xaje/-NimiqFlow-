@@ -29,7 +29,7 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-Bx_CQIPa.js"></script>
+  <script type="module" crossorigin src="/assets/index-Dfv46ZeF.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-OdQ7wZ4g.css">
 </head>
 <body class="bg-[#0d0f0f] text-[#e2e2e2] min-h-screen pb-24">
@@ -119,7 +119,7 @@
                 </div>
             </section>
 
-            <!-- ACTION GRID: SEND, RECEIVE, REQUEST, INVOICE, SIGN MSG -->
+            <!-- ACTION GRID: SEND, RECEIVE, REQUEST, AI INVOICE, SIGN MSG -->
             <section class="grid grid-cols-5 gap-2 animate-fade-in-up delay-1">
                 <button id="btn-open-send" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
                     <div class="w-12 h-12 rounded-2xl bg-[#f6a623]/15 border border-[#f6a623]/30 flex items-center justify-center text-[#ffc982] group-hover:bg-[#f6a623] group-hover:text-[#462b00] transition-colors duration-300 shadow-md">
@@ -144,9 +144,9 @@
 
                 <button id="btn-open-invoice-builder" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
                     <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-2xl">receipt_long</span>
+                        <span class="material-symbols-outlined text-2xl">auto_awesome</span>
                     </div>
-                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="invoice">Invoice</span>
+                    <span class="text-[11px] font-semibold text-[#d7c3ae]" data-i18n="ai_invoice">AI Invoice</span>
                 </button>
 
                 <button id="btn-open-sign-modal" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
@@ -509,12 +509,12 @@
         </div>
     </div>
 
-    <!-- MODAL: SMART AI INVOICE BUILDER -->
+    <!-- MODAL: AI SMART INVOICE BUILDER -->
     <div id="modal-invoice-builder" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
         <div class="glass-modal rounded-3xl p-6 w-full max-w-lg flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-8">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-[#ffc982] flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#ffc982]">receipt_long</span> <span data-i18n="smart_invoice">Smart Invoice Generator</span>
+                    <span class="material-symbols-outlined text-[#ffc982]">auto_awesome</span> <span data-i18n="smart_invoice">AI Smart Invoice Generator</span>
                 </h3>
                 <button id="btn-close-invoice" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white">
                     <span class="material-symbols-outlined text-sm">close</span>
@@ -558,15 +558,16 @@
                 </div>
 
                 <div class="p-3 bg-white/5 rounded-xl border border-white/10 flex justify-between items-center mt-2">
-                    <span class="text-xs font-semibold text-[#d7c3ae]">Computed Total:</span>
+                    <span class="text-xs font-semibold text-[#d7c3ae]">AI Calculated Total:</span>
                     <div class="text-right">
                         <span id="invoice-total-usd-display" class="block text-sm font-bold text-white">$100.00 USD</span>
                         <span id="invoice-total-nim-display" class="text-xs font-mono text-[#ffc982] font-bold">≈ 0.00 NIM</span>
                     </div>
                 </div>
 
-                <button id="btn-generate-invoice-preview" class="w-full bg-[#f6a623] text-[#462b00] font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity mt-1">
-                    Generate Smart Invoice
+                <button id="btn-generate-invoice-preview" class="w-full bg-[#f6a623] text-[#462b00] font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-1">
+                    <span class="material-symbols-outlined text-lg">auto_awesome</span>
+                    <span>Generate AI Invoice</span>
                 </button>
             </div>
 
@@ -574,7 +575,7 @@
                 <div id="printable-invoice" class="p-6 bg-white text-slate-900 rounded-2xl flex flex-col gap-4 shadow-2xl">
                     <div class="flex justify-between items-start border-b border-gray-200 pb-3">
                         <div>
-                            <h2 class="text-xl font-bold text-amber-600 tracking-tight">INVOICE</h2>
+                            <h2 class="text-xl font-bold text-amber-600 tracking-tight">AI INVOICE</h2>
                             <p id="prev-inv-num" class="text-xs font-mono text-gray-500">INV-2026-001</p>
                         </div>
                         <div class="text-right">

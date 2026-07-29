@@ -21,9 +21,10 @@ const TRANSLATIONS = {
         send: 'Send',
         receive: 'Receive',
         request_pay: 'Request',
+        ai_invoice: 'AI Invoice',
         invoice: 'Invoice',
         sign_msg: 'Sign Msg',
-        smart_invoice: 'Smart Invoice Generator',
+        smart_invoice: 'AI Smart Invoice Generator',
         recent_activity: 'Recent Activity',
         view_all: 'View All',
         connect_prompt: 'Connect with Nimiq Pay to load mainnet transactions.',
@@ -51,9 +52,10 @@ const TRANSLATIONS = {
         send: 'Senden',
         receive: 'Empfangen',
         request_pay: 'Anfordern',
+        ai_invoice: 'KI-Rechnung',
         invoice: 'Rechnung',
         sign_msg: 'Signieren',
-        smart_invoice: 'Intelligenter Rechnungsgenerator',
+        smart_invoice: 'KI-Rechnungsgenerator',
         recent_activity: 'Letzte Aktivitäten',
         view_all: 'Alle anzeigen',
         connect_prompt: 'Mit Nimiq Pay verbinden, um Transaktionen zu laden.',
@@ -81,9 +83,10 @@ const TRANSLATIONS = {
         send: 'Enviar',
         receive: 'Recibir',
         request_pay: 'Solicitar',
+        ai_invoice: 'Factura IA',
         invoice: 'Factura',
         sign_msg: 'Firmar',
-        smart_invoice: 'Generador de Facturas Inteligente',
+        smart_invoice: 'Generador de Facturas IA',
         recent_activity: 'Actividad Reciente',
         view_all: 'Ver Todo',
         connect_prompt: 'Conéctese con Nimiq Pay para cargar transacciones.',
@@ -903,7 +906,7 @@ function setupSendModal() {
 }
 
 // ==========================================
-// SMART AI INVOICE BUILDER
+// AI SMART INVOICE BUILDER (EXCLUSIVE AI FEATURE)
 // ==========================================
 function setupInvoiceBuilder() {
     const merchantAddrInput = document.getElementById('invoice-merchant-address');
@@ -1019,6 +1022,7 @@ function setupInvoiceBuilder() {
             formSection.classList.add('hidden');
             previewSection.classList.remove('hidden');
             previewSection.classList.add('flex');
+            showToast('AI Smart Invoice generated successfully!');
         });
     }
 
