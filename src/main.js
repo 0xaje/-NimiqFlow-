@@ -21,6 +21,10 @@ const TRANSLATIONS = {
         nim_balance: 'Nimiq Crypto Balance',
         send: 'Send',
         receive: 'Receive',
+        request_pay: 'Request',
+        request_pay_title: 'Request Payment with Memo & Link',
+        request_pay_desc: 'Create payment requests with custom amounts and memos. Generates shareable checkout links and QR codes.',
+        create_request_btn: 'Create Payment Request',
         invoice: 'Invoice',
         qr_pay: 'QR Pay',
         sign_msg: 'Sign Msg',
@@ -59,6 +63,10 @@ const TRANSLATIONS = {
         nim_balance: 'Nimiq Krypto-Guthaben',
         send: 'Senden',
         receive: 'Empfangen',
+        request_pay: 'Anfordern',
+        request_pay_title: 'Zahlung mit Verwendungszweck anfordern',
+        request_pay_desc: 'Erstellen Sie Zahlungsanforderungen mit Betrag und Betreff. Generiert teilbare Links und QR-Codes.',
+        create_request_btn: 'Zahlungsanforderung erstellen',
         invoice: 'Rechnung',
         qr_pay: 'QR Bezahlen',
         sign_msg: 'Signieren',
@@ -97,6 +105,10 @@ const TRANSLATIONS = {
         nim_balance: 'Saldo Nimiq Cripto',
         send: 'Enviar',
         receive: 'Recibir',
+        request_pay: 'Solicitar',
+        request_pay_title: 'Solicitar Pago con Nota y Enlace',
+        request_pay_desc: 'Cree solicitudes de pago con monto y concepto. Genera enlaces para compartir y códigos QR.',
+        create_request_btn: 'Crear Solicitud de Pago',
         invoice: 'Factura',
         qr_pay: 'Pago QR',
         sign_msg: 'Firmar',
@@ -137,7 +149,8 @@ let state = {
     isLoading: false,
     activeTab: 'home',
     sendAmountStr: '0',
-    lastSignature: ''
+    lastSignature: '',
+    lastGeneratedRequestUrl: ''
 };
 
 // HubApi Protocol Bridge
@@ -210,6 +223,84 @@ async function connectWithNimiqPay() {
 }
 
 // ==========================================
+// PAYMENT REQUEST GENERATOR (MEMO, SHAREABLE LINK & QR)
+// ==========================================
+function setupRequestPaymentModal() {
+    const inputAmount = document.getElementById('req-pay-amount-nim');
+    const dispUsd = document.getElementById('req-pay-amount-usd');
+    const inputMemo = document.getElementById('req-pay-memo');
+    const btnGenerate = document.getElementById('btn-generate-request-link');
+    const outputContainer = document.getElementById('request-pay-output');
+    const qrCanvas = document.getElementById('request-pay-qr-canvas');
+    const dispUrl = document.getElementById('request-pay-url-display');
+    const btnCopyLink = document.getElementById('btn-copy-request-link');
+
+    if (!btnGenerate) return;
+
+    const updateUsdCalc = () => {
+        const val = parseFloat(inputAmount?.value || 0);
+        const usdVal = val * state.usdRate;
+        if (dispUsd) dispUsd.textContent = `≈ ${formatUSD(usdVal)} USD`;
+    };
+
+    if (inputAmount) {
+        inputAmount.addEventListener('input', updateUsdCalc);
+    }
+
+    btnGenerate.addEventListener('click', () => {
+        if (!state.address) {
+            showToast('Please connect with Nimiq Pay first');
+            return;
+        }
+
+        const amountNim = parseFloat(inputAmount?.value || 0);
+        const memo = (inputMemo?.value || '').trim();
+
+        if (amountNim <= 0) {
+            showToast('Please enter a valid NIM amount for the request');
+            return;
+        }
+
+        const luna = nimToLuna(amountNim);
+        const cleanAddr = state.address.replace(/\s+/g, '');
+        
+        // Shareable Nimiq Hub checkout deep link
+        const shareableUrl = `https://hub.nimiq.com/checkout?recipient=${cleanAddr}&value=${luna}${memo ? `&message=${encodeURIComponent(memo)}` : ''}`;
+        
+        // Nimiq Protocol URI for QR Code
+        const paymentUri = `nimiq:${cleanAddr}?value=${luna}${memo ? `&message=${encodeURIComponent(memo)}` : ''}`;
+
+        state.lastGeneratedRequestUrl = shareableUrl;
+
+        if (qrCanvas) {
+            QRCode.toCanvas(qrCanvas, paymentUri, { width: 150, margin: 1 }, (err) => {
+                if (err) console.error('Request QR Error:', err);
+            });
+        }
+
+        if (dispUrl) dispUrl.textContent = shareableUrl;
+
+        if (outputContainer) {
+            outputContainer.classList.remove('hidden');
+            outputContainer.classList.add('flex');
+        }
+
+        showToast('Payment request link & QR code generated!');
+    });
+
+    if (btnCopyLink) {
+        btnCopyLink.addEventListener('click', () => {
+            if (state.lastGeneratedRequestUrl) {
+                navigator.clipboard.writeText(state.lastGeneratedRequestUrl);
+                showToast('Shareable payment link copied to clipboard!');
+            }
+        });
+    }
+
+    updateUsdCalc();
+}
+
+// ==========================================
 // SIGN MESSAGE & VERIFY IDENTITY CONTROLLER
 // ==========================================
 function setupSignMessageModal() {
@@ -246,7 +337,6 @@ function setupSignMessageModal() {
             if (sigResult && sigResult.signature) {
                 sigHash = sigResult.signature;
             } else {
-                // Generate cryptographic Ed25519/SHA-256 signature hash signature digest
                 const text = `NIMIQ_PAY_SIGN_MSG:${state.address}:${msgText}:${Date.now()}`;
                 const encoder = new TextEncoder();
                 const data = encoder.encode(text);
@@ -1085,9 +1175,11 @@ function setupModalTriggers() {
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
+    document.getElementById('btn-open-request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
+    document.getElementById('btn-trigger-request-pay')?.addEventListener('click', () => openModal('modal-request-pay'));
+
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-invoice-builder-2')?.addEventListener('click', () => openModal('modal-invoice-builder'));
-    document.getElementById('btn-open-qr-scanner')?.addEventListener('click', () => openModal('modal-send'));
 
     document.getElementById('btn-open-sign-modal')?.addEventListener('click', () => openModal('modal-sign-message'));
     document.getElementById('btn-trigger-sign-identity')?.addEventListener('click', () => openModal('modal-sign-message'));
@@ -1095,6 +1187,8 @@ function setupModalTriggers() {
 
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
+    document.getElementById('btn-close-[#modal-request-pay]');
+    document.getElementById('btn-close-request-pay')?.addEventListener('click', () => closeModal('modal-request-pay'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
 
@@ -1150,6 +1244,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupNavigation();
     setupModalTriggers();
     setupSendModal();
+    setupRequestPaymentModal();
     setupInvoiceBuilder();
     setupSignMessageModal();
     setupHistoryFilterButtons();

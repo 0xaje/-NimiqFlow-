@@ -148,11 +148,11 @@
                     <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="send">Send</span>
                 </button>
 
-                <button id="btn-open-receive" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
+                <button id="btn-open-request-pay" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
                     <div class="w-14 h-14 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300 shadow-md">
-                        <span class="material-symbols-outlined text-[26px]">call_received</span>
+                        <span class="material-symbols-outlined text-[26px]">request_quote</span>
                     </div>
-                    <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="receive">Receive</span>
+                    <span class="text-xs font-semibold text-[#d7c3ae]" data-i18n="request_pay">Request</span>
                 </button>
 
                 <button id="btn-open-invoice-builder" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
@@ -170,20 +170,20 @@
                 </button>
             </section>
 
-            <!-- VERIFY IDENTITY & SIGN MESSAGE FEATURE CARD -->
-            <section class="bg-[#181a1a] rounded-2xl p-5 border border-emerald-500/30 relative overflow-hidden animate-fade-in-up delay-2 shadow-xl flex flex-col gap-2.5">
+            <!-- REQUEST PAYMENT FEATURE BANNER -->
+            <section class="bg-[#181a1a] rounded-2xl p-5 border border-sky-500/30 relative overflow-hidden animate-fade-in-up delay-2 shadow-xl flex flex-col gap-2.5">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-emerald-400">verified_user</span>
-                        <h3 class="text-base font-bold text-white" data-i18n="verify_identity">Verify Identity (Sign Message)</h3>
+                        <span class="material-symbols-outlined text-sky-400">request_quote</span>
+                        <h3 class="text-base font-bold text-white" data-i18n="request_pay_title">Request Payment with Memo & Link</h3>
                     </div>
-                    <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase">CRYPTOGRAPHIC</span>
+                    <span class="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-2 py-0.5 rounded-full uppercase">SHAREABLE</span>
                 </div>
-                <p class="text-[#d7c3ae] text-xs leading-relaxed" data-i18n="sign_msg_desc">
-                    Cryptographically sign authentication messages using your Nimiq Pay key pair to prove wallet ownership.
+                <p class="text-[#d7c3ae] text-xs leading-relaxed" data-i18n="request_pay_desc">
+                    Create payment requests with custom amounts and memos. Generates shareable checkout links and QR codes.
                 </p>
-                <button id="btn-trigger-sign-identity" class="w-fit px-4 py-2 bg-emerald-500/20 border border-emerald-500/40 rounded-full text-emerald-300 font-semibold text-xs hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-1.5 active:scale-95">
-                    <span class="material-symbols-outlined text-sm">draw</span> <span data-i18n="sign_message_btn">Sign Identity Message</span>
+                <button id="btn-trigger-request-pay" class="w-fit px-4 py-2 bg-sky-500/20 border border-sky-500/40 rounded-full text-sky-300 font-semibold text-xs hover:bg-sky-500 hover:text-white transition-all flex items-center gap-1.5 active:scale-95">
+                    <span class="material-symbols-outlined text-sm">link</span> <span data-i18n="create_request_btn">Create Payment Request</span>
                 </button>
             </section>
 
@@ -395,6 +395,57 @@
         </div>
 
     </main>
+
+    <!-- MODAL: REQUEST PAYMENT (SHAREABLE LINK, QR & MEMO) -->
+    <div id="modal-request-pay" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-modal rounded-3xl p-6 w-full max-w-md flex flex-col gap-4 animate-fade-in-up relative border border-white/15 my-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-sky-400 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sky-400">request_quote</span> Request Payment
+                </h3>
+                <button id="btn-close-request-pay" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">Amount (NIM)</label>
+                    <input id="req-pay-amount-nim" type="number" step="1" value="100" placeholder="100" class="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:border-sky-400 focus:outline-none"/>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">USD Estimate</label>
+                    <div id="req-pay-amount-usd" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-sky-300 font-mono flex items-center">≈ $0.05 USD</div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-[#d7c3ae] mb-1">Payment Memo / Note</label>
+                <input id="req-pay-memo" type="text" value="Coffee payment via KorriPay" placeholder="Payment memo note..." class="w-full bg-black/50 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-sky-400 focus:outline-none"/>
+            </div>
+
+            <button id="btn-generate-request-link" class="w-full bg-sky-500 text-slate-950 font-bold py-3.5 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg">
+                <span class="material-symbols-outlined text-lg">qr_code_2</span> Generate Payment Request Link & QR
+            </button>
+
+            <!-- Generated Request Container -->
+            <div id="request-pay-output" class="hidden flex-col gap-3 p-4 bg-white text-slate-900 rounded-2xl shadow-2xl mt-1">
+                <div class="flex flex-col items-center gap-2">
+                    <canvas id="request-pay-qr-canvas" class="w-36 h-36"></canvas>
+                    <span class="text-[10px] font-mono text-gray-600">Scan QR Code with Nimiq Pay</span>
+                </div>
+
+                <div class="flex flex-col gap-1 border-t border-gray-200 pt-2.5">
+                    <span class="text-[10px] font-bold uppercase text-gray-500">Shareable Checkout Link</span>
+                    <p id="request-pay-url-display" class="text-[11px] font-mono text-sky-700 bg-sky-50 p-2 rounded-lg break-all border border-sky-200"></p>
+                </div>
+
+                <button id="btn-copy-request-link" class="w-full bg-sky-600 text-white font-bold py-2.5 rounded-xl hover:bg-sky-700 transition-colors text-xs flex items-center justify-center gap-1.5 shadow-md">
+                    <span class="material-symbols-outlined text-base">content_copy</span> Copy Shareable Payment Link
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL: SIGN MESSAGE / VERIFY IDENTITY -->
     <div id="modal-sign-message" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
