@@ -4,14 +4,14 @@ Welcome judges! This guide provides a step-by-step walkthrough to test and evalu
 
 ---
 
-## ⚡ Quick-Start Demo Setup
+## Quick-Start Demo Setup
 
 1. Launch Nimiq Flow at [https://nimiq-flow.vercel.app](https://nimiq-flow.vercel.app) (or locally at `http://localhost:5173`).
 2. Ensure network mode is set to **`TestAlbatross`** (visible via the blue pill badge at the top header).
 
 ---
 
-## 🧪 Step-by-Step Testing Script
+## Step-by-Step Testing Script
 
 ### Step 1: Wallet Connection & Demo Quick-Fill
 * Click **Connect Nimiq Pay** on the hero card.
@@ -52,7 +52,7 @@ Welcome judges! This guide provides a step-by-step walkthrough to test and evalu
 
 ---
 
-## 🏆 Key Evaluation Highlights
+## Key Evaluation Highlights
 
 - **Native SDK Integration**: Built for `window.nimiqPay` with automated Hub fallback.
 - **Zero Mock Data**: 100% live RPC data via public Nimiq Watch JSON-RPC nodes.

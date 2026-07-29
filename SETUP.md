@@ -4,7 +4,7 @@ This guide provides instructions for setting up, building, and running **Nimiq F
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 Ensure your system meets the following requirements:
 * **Node.js**: `v18.0.0` or higher
@@ -14,7 +14,7 @@ Ensure your system meets the following requirements:
 
 ---
 
-## ⚙️ Environment Configuration
+## Environment Configuration
 
 Nimiq Flow uses Vite environment variables for environment switching. Two configuration files are provided in the repository:
 
@@ -40,7 +40,7 @@ VITE_COINGECKO=https://api.coingecko.com/api/v3
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 1. **Clone the Repository**:
    ```bash
@@ -61,7 +61,7 @@ VITE_COINGECKO=https://api.coingecko.com/api/v3
 
 ---
 
-## 📦 Production Build & Testing
+## Production Build & Testing
 
 1. **Build Production Bundle**:
    ```bash
@@ -77,7 +77,7 @@ VITE_COINGECKO=https://api.coingecko.com/api/v3
 
 ---
 
-## 🔍 Diagnostics & Network Switching
+## Diagnostics & Network Switching
 
 Nimiq Flow includes a built-in **Developer Environment** panel inside the app under **Settings** → **Developer Environment**:
 

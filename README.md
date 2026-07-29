@@ -4,13 +4,13 @@
 
 ---
 
-## 📌 Overview
+## Overview
 
 Nimiq Flow transforms crypto payments from complex address exchanges into an intuitive, human-friendly payment experience. Whether split-billing a dinner, requesting payment from a client, or parsing plain English text into itemized PDF invoices, Nimiq Flow bridges everyday commerce with the high-speed Nimiq Albatross PoS blockchain.
 
 ---
 
-## ✨ Features
+## Features
 
 - **Native Nimiq Pay Mini App SDK (`window.nimiqPay`)**: Primary native integration for account discovery (`listAccounts()`), payment checkout (`sendTransaction()`), and message signing (`signMessage()`), with an automated Web Hub API fallback for desktop compatibility.
 - **AI-Assisted Natural Language Invoice Builder**: Type plain English instructions (e.g., *"Bill Acme Corp 200 NIM for logo design and 50 NIM for web setup"*) to automatically parse client details, line items, and CoinGecko USD/NIM exchange rates with scan-to-pay QR codes and PDF export (`window.print()`).
@@ -25,7 +25,7 @@ Nimiq Flow transforms crypto payments from complex address exchanges into an int
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -38,7 +38,7 @@ Nimiq Flow transforms crypto payments from complex address exchanges into an int
 
 ---
 
-## 📐 Architecture
+## Architecture
 
 ```
 Nimiq Flow
@@ -62,7 +62,7 @@ For an in-depth breakdown of components and data flow, see [ARCHITECTURE.md](./A
 
 ---
 
-## 💻 Installation & Local Setup
+## Installation & Local Setup
 
 ### Prerequisites
 - Node.js `v18.0.0` or higher
@@ -96,7 +96,7 @@ For detailed configuration guidelines, see [SETUP.md](./SETUP.md).
 
 ---
 
-## 🎬 Demo & Video Walkthrough
+## Demo & Video Walkthrough
 
 - **Live Production App URL**: [https://nimiq-flow.vercel.app](https://nimiq-flow.vercel.app)
 - **GitHub Repository**: [https://github.com/0xaje/-NimiqFlow-](https://github.com/0xaje/-NimiqFlow-)
@@ -104,7 +104,7 @@ For detailed configuration guidelines, see [SETUP.md](./SETUP.md).
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [x] Native Nimiq Pay Mini App SDK Integration
 - [x] AI-Assisted Natural Language Invoice Builder & PDF Export
@@ -117,6 +117,6 @@ For detailed configuration guidelines, see [SETUP.md](./SETUP.md).
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See [LICENSE](./LICENSE) for more information.
