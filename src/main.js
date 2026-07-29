@@ -1812,12 +1812,18 @@ function setupModalTriggers() {
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
 
     document.getElementById('btn-open-sign-modal')?.addEventListener('click', () => openModal('modal-sign-message'));
+    document.getElementById('btn-open-about-modal')?.addEventListener('click', () => openModal('modal-about'));
 
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
     document.getElementById('btn-close-request-pay')?.addEventListener('click', () => closeModal('modal-request-pay'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
     document.getElementById('btn-close-sign')?.addEventListener('click', () => closeModal('modal-sign-message'));
+    document.getElementById('btn-close-about-modal')?.addEventListener('click', () => closeModal('modal-about'));
+
+    document.getElementById('btn-about-view-docs')?.addEventListener('click', () => {
+        window.open('https://github.com/0xaje/-NimiqFlow-#readme', '_blank');
+    });
 
     const doCopy = () => {
         if (!state.address) {
