@@ -436,6 +436,37 @@ function setupDeveloperMode() {
                 ? 'flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 px-2.5 py-0.5 rounded-full text-[10px] text-amber-300 font-mono font-bold cursor-pointer hover:scale-105 transition-all shadow-sm'
                 : 'flex items-center gap-1 bg-sky-500/20 border border-sky-400/40 px-2.5 py-0.5 rounded-full text-[10px] text-sky-300 font-mono font-bold cursor-pointer hover:scale-105 transition-all shadow-sm';
         }
+
+        // Toggle visibility of Faucet buttons and cards
+        const heroFaucetBtn = document.getElementById('btn-hero-claim-faucet');
+        const settingsFaucetCard = document.getElementById('container-settings-faucet-card');
+        const receiveFaucetCard = document.getElementById('container-receive-modal-faucet');
+        const devFaucetBadge = document.getElementById('dev-faucet-badge');
+
+        if (heroFaucetBtn) {
+            if (isMain) heroFaucetBtn.classList.add('hidden');
+            else heroFaucetBtn.classList.remove('hidden');
+        }
+
+        if (settingsFaucetCard) {
+            if (isMain) settingsFaucetCard.classList.add('hidden');
+            else settingsFaucetCard.classList.remove('hidden');
+        }
+
+        if (receiveFaucetCard) {
+            if (isMain) receiveFaucetCard.classList.add('hidden');
+            else receiveFaucetCard.classList.remove('hidden');
+        }
+
+        if (devFaucetBadge) {
+            if (isMain) {
+                devFaucetBadge.textContent = 'MAINNET LIVE';
+                devFaucetBadge.className = 'text-[9px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-0.5 rounded-full uppercase';
+            } else {
+                devFaucetBadge.textContent = 'TESTNET FAUCET ENABLED';
+                devFaucetBadge.className = 'text-[9px] bg-sky-500/20 text-sky-300 font-bold px-2.5 py-0.5 rounded-full uppercase';
+            }
+        }
     };
 
     if (radioTest && radioMain) {
