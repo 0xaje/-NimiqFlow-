@@ -6,10 +6,9 @@ import HubApi from '@nimiq/hub-api';
 // ==========================================
 const RPC_ENDPOINT = 'https://rpc.nimiqwatch.com';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2&vs_currencies=usd';
-const DEFAULT_ADDRESS = 'NQ07 0000 0000 0000 0000 0000 0000 0000 0000';
 
 let state = {
-    address: localStorage.getItem('korripay_address') || DEFAULT_ADDRESS,
+    address: localStorage.getItem('korripay_address') || '',
     nimBalance: 0,
     usdRate: 0.00047,
     usdBalance: 0,
@@ -18,12 +17,12 @@ let state = {
     activeTab: 'home'
 };
 
-// Initialize Hub API if available
+// Initialize Nimiq Hub API
 let hubApi = null;
 try {
     hubApi = new HubApi('https://hub.nimiq.com');
 } catch (err) {
-    console.warn('Nimiq HubApi fallback mode:', err);
+    console.warn('Nimiq HubApi init note:', err);
 }
 
 // ==========================================
@@ -53,7 +52,7 @@ function formatNIM(amount) {
 }
 
 function formatDate(timestamp) {
-    if (!timestamp) return 'Just now';
+    if (!timestamp) return 'Recently';
     const date = new Date(timestamp);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + 
            date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -65,6 +64,40 @@ function showToast(message) {
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2500);
+}
+
+// ==========================================
+// NIMIQ HUB WALLET AUTHENTICATION
+// ==========================================
+async function connectNimiqWallet() {
+    if (hubApi) {
+        try {
+            const res = await hubApi.chooseAddress({
+                appName: 'KorriPay'
+            });
+            if (res && res.address) {
+                setAddress(res.address);
+                showToast(`Connected Nimiq wallet: ${formatNimiqAddress(res.address)}`);
+            }
+        } catch (err) {
+            console.warn('Hub chooseAddress note:', err);
+            // Fallback to hub login request
+            hubApi.login({ appName: 'KorriPay' }).catch(() => {
+                showToast('Wallet selection cancelled or closed');
+            });
+        }
+    } else {
+        openModal('tab-content-profile');
+    }
+}
+
+function setAddress(newAddr) {
+    const clean = newAddr.trim();
+    if (!clean) return;
+    state.address = formatNimiqAddress(clean);
+    localStorage.setItem('korripay_address', state.address);
+    updateBalanceDisplay();
+    refreshAllData();
 }
 
 // ==========================================
@@ -81,11 +114,12 @@ async function fetchExchangeRate() {
             }
         }
     } catch (err) {
-        console.warn('CoinGecko API fetch warning, using live fallback rate:', err);
+        console.warn('CoinGecko API fetch:', err);
     }
 }
 
 async function fetchNimiqAccount() {
+    if (!state.address) return;
     try {
         const payload = {
             jsonrpc: "2.0",
@@ -110,11 +144,12 @@ async function fetchNimiqAccount() {
             }
         }
     } catch (err) {
-        console.error('Failed to fetch Nimiq account from RPC:', err);
+        console.error('Nimiq RPC Account Error:', err);
     }
 }
 
 async function fetchNimiqTransactions() {
+    if (!state.address) return;
     try {
         const payload = {
             jsonrpc: "2.0",
@@ -137,7 +172,7 @@ async function fetchNimiqTransactions() {
             }
         }
     } catch (err) {
-        console.error('Failed to fetch Nimiq transactions from RPC:', err);
+        console.error('Nimiq RPC Transactions Error:', err);
     }
 }
 
@@ -165,10 +200,25 @@ function updateRateDisplay() {
 }
 
 function updateBalanceDisplay() {
-    const addrEl = document.getElementById('display-[#display-address]') || document.getElementById('display-address');
+    const addrEl = document.getElementById('display-address');
     const nimEl = document.getElementById('display-nim-balance');
     const usdEl = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
+    const connectBanner = document.getElementById('wallet-connect-banner');
+    const btnConnectLabel = document.getElementById('btn-connect-label');
+
+    if (!state.address) {
+        if (addrEl) addrEl.textContent = 'Not Connected';
+        if (nimEl) nimEl.textContent = '0.00';
+        if (usdEl) usdEl.textContent = '$0.00';
+        if (receiveAddrEl) receiveAddrEl.textContent = 'Please connect wallet';
+        if (connectBanner) connectBanner.classList.remove('hidden');
+        if (btnConnectLabel) btnConnectLabel.textContent = 'Connect Wallet';
+        return;
+    }
+
+    if (connectBanner) connectBanner.classList.add('hidden');
+    if (btnConnectLabel) btnConnectLabel.textContent = state.address.slice(0, 9) + '...';
 
     const formattedAddr = formatNimiqAddress(state.address);
 
@@ -177,7 +227,6 @@ function updateBalanceDisplay() {
     if (usdEl) usdEl.textContent = formatUSD(state.usdBalance);
     if (receiveAddrEl) receiveAddrEl.textContent = formattedAddr;
 
-    // Render Receive QR Code
     renderReceiveQRCode();
 }
 
@@ -187,11 +236,23 @@ function renderTransactions() {
 
     if (!container) return;
 
+    if (!state.address) {
+        const emptyHtml = `
+            <div class="p-6 glass-card rounded-xl text-center text-xs text-[#d7c3ae]">
+                <span class="material-symbols-outlined text-2xl text-[#ffc982] mb-1">link_off</span>
+                <p>Connect your Nimiq address to load live transactions.</p>
+            </div>
+        `;
+        container.innerHTML = emptyHtml;
+        if (fullContainer) fullContainer.innerHTML = emptyHtml;
+        return;
+    }
+
     if (state.transactions.length === 0) {
         const emptyHtml = `
             <div class="p-6 glass-card rounded-xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-2xl text-[#ffc982] mb-1">history</span>
-                <p>No recent transactions recorded on mainnet for this address.</p>
+                <p>No transactions recorded on mainnet for address ${state.address.slice(0, 9)}...</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -240,10 +301,10 @@ function renderTransactions() {
 
 function renderReceiveQRCode() {
     const canvas = document.getElementById('receive-qr-canvas');
-    if (!canvas) return;
+    if (!canvas || !state.address) return;
     const uri = `nimiq:${state.address.replace(/\s+/g, '')}`;
     QRCode.toCanvas(canvas, uri, { width: 180, margin: 1 }, (err) => {
-        if (err) console.error('QR code generation error:', err);
+        if (err) console.error('QR error:', err);
     });
 }
 
@@ -287,7 +348,6 @@ function setupSendModal() {
 
             const luna = nimToLuna(amount);
             
-            // Try Hub checkout API first, fallback to direct Nimiq Hub URL
             if (hubApi) {
                 hubApi.checkout({
                     appName: 'KorriPay',
@@ -295,7 +355,7 @@ function setupSendModal() {
                     value: luna,
                     extraData: message
                 }).catch(err => {
-                    console.warn('Hub API direct launch fallback:', err);
+                    console.warn('Hub Api checkout launch:', err);
                     window.open(`https://hub.nimiq.com/checkout?recipient=${recipient}&value=${luna}&message=${encodeURIComponent(message)}`, '_blank');
                 });
             } else {
@@ -341,7 +401,7 @@ function setupInvoiceBuilder() {
     const btnBackEdit = document.getElementById('btn-back-to-edit-invoice');
     const btnPrint = document.getElementById('btn-print-invoice');
 
-    if (merchantAddrInput) {
+    if (merchantAddrInput && state.address) {
         merchantAddrInput.value = state.address;
     }
 
@@ -387,8 +447,8 @@ function setupInvoiceBuilder() {
             const newRow = document.createElement('div');
             newRow.className = 'grid grid-cols-12 gap-2 items-center invoice-item-row';
             newRow.innerHTML = `
-                <input type="text" placeholder="Service description" value="Additional Service" class="col-span-6 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white item-desc focus:border-[#ffc982] focus:outline-none"/>
-                <input type="number" step="0.01" placeholder="USD" value="25.00" class="col-span-5 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono item-usd focus:border-[#ffc982] focus:outline-none"/>
+                <input type="text" placeholder="Service description" value="Software Service" class="col-span-6 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white item-desc focus:border-[#ffc982] focus:outline-none"/>
+                <input type="number" step="0.01" placeholder="USD" value="50.00" class="col-span-5 bg-black/50 border border-white/20 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono item-usd focus:border-[#ffc982] focus:outline-none"/>
                 <button class="col-span-1 text-red-400 hover:text-red-300 btn-remove-item flex items-center justify-center">
                     <span class="material-symbols-outlined text-sm">delete</span>
                 </button>
@@ -401,12 +461,16 @@ function setupInvoiceBuilder() {
     if (btnGenerate) {
         btnGenerate.addEventListener('click', () => {
             const num = (document.getElementById('invoice-num')?.value || 'INV-2026-001').trim();
-            const client = (document.getElementById('invoice-client')?.value || 'Valued Client').trim();
+            const client = (document.getElementById('invoice-client')?.value || 'Client').trim();
             const merchantAddr = (document.getElementById('invoice-merchant-address')?.value || state.address).trim();
             
+            if (!merchantAddr) {
+                showToast('Merchant Nimiq address is required');
+                return;
+            }
+
             const { totalUsd, totalNim } = calculateInvoiceTotals();
 
-            // Populate preview
             document.getElementById('prev-inv-num').textContent = num;
             document.getElementById('prev-inv-client').textContent = client;
             document.getElementById('prev-inv-merchant-addr').textContent = formatNimiqAddress(merchantAddr);
@@ -414,7 +478,6 @@ function setupInvoiceBuilder() {
             document.getElementById('prev-inv-total-usd').textContent = formatUSD(totalUsd);
             document.getElementById('prev-inv-total-nim').textContent = `${formatNIM(totalNim)} NIM`;
 
-            // Populate items table
             const tbody = document.getElementById('prev-inv-items-body');
             if (tbody) {
                 const rows = document.querySelectorAll('.invoice-item-row');
@@ -432,7 +495,6 @@ function setupInvoiceBuilder() {
                 }).join('');
             }
 
-            // Generate Payment QR Code for Invoice
             const qrCanvas = document.getElementById('invoice-qr-canvas');
             if (qrCanvas) {
                 const luna = nimToLuna(totalNim);
@@ -440,7 +502,6 @@ function setupInvoiceBuilder() {
                 QRCode.toCanvas(qrCanvas, paymentUri, { width: 100, margin: 0 });
             }
 
-            // Toggle view
             formSection.classList.add('hidden');
             previewSection.classList.remove('hidden');
             previewSection.classList.add('flex');
@@ -504,7 +565,6 @@ function initShaderCanvas() {
             float ring = sin(dist * 18.0 - u_time * 3.0);
             ring = step(0.94, ring);
             
-            // Nimiq Warm Amber/Gold gradient
             vec3 color = vec3(1.0, 0.78, 0.51);
             float alpha = ring * (1.0 - dist * 1.4) * 0.45;
             
@@ -606,10 +666,7 @@ function setupNavigation() {
         }
     });
 
-    const btnViewAllHistory = document.getElementById('btn-view-all-history');
-    if (btnViewAllHistory) {
-        btnViewAllHistory.addEventListener('click', () => switchTab('history'));
-    }
+    document.getElementById('btn-view-all-history')?.addEventListener('click', () => switchTab('history'));
 }
 
 function openModal(id) {
@@ -629,34 +686,35 @@ function closeModal(id) {
 }
 
 function setupModalTriggers() {
-    // Open triggers
+    document.getElementById('btn-connect-hub')?.addEventListener('click', connectNimiqWallet);
+    document.getElementById('btn-banner-connect')?.addEventListener('click', connectNimiqWallet);
+    document.getElementById('btn-banner-manual')?.addEventListener('click', () => {
+        const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
+        if (addr) setAddress(addr);
+    });
+
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
-    document.getElementById('btn-[#btn-open-invoice-builder]')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
-    document.getElementById('btn-change-address')?.addEventListener('click', () => switchTab('profile'));
 
-    // Close triggers
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
     document.getElementById('btn-close-invoice')?.addEventListener('click', () => closeModal('modal-invoice-builder'));
 
-    // Copy Address Button
-    const btnCopy = document.getElementById('btn-copy-address');
-    const btnCopyRec = document.getElementById('btn-copy-receive-address');
-
     const doCopy = () => {
+        if (!state.address) {
+            showToast('Please connect your Nimiq wallet first');
+            return;
+        }
         navigator.clipboard.writeText(state.address.replace(/\s+/g, ''));
         showToast('Nimiq address copied to clipboard!');
     };
 
-    if (btnCopy) btnCopy.addEventListener('click', doCopy);
-    if (btnCopyRec) btnCopyRec.addEventListener('click', doCopy);
+    document.getElementById('btn-copy-address')?.addEventListener('click', doCopy);
+    document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
 
-    // Refresh button
     document.getElementById('btn-refresh-data')?.addEventListener('click', refreshAllData);
 
-    // Custom Address Input Handler
     const btnSaveAddr = document.getElementById('btn-save-custom-address');
     const inputCustomAddr = document.getElementById('input-custom-address');
 
@@ -664,23 +722,19 @@ function setupModalTriggers() {
         btnSaveAddr.addEventListener('click', () => {
             const raw = inputCustomAddr.value.trim();
             if (raw) {
-                state.address = formatNimiqAddress(raw);
-                localStorage.setItem('korripay_address', state.address);
-                updateBalanceDisplay();
-                refreshAllData();
+                setAddress(raw);
                 showToast('Nimiq address updated successfully!');
             }
         });
     }
 
-    // Explorer Link
     document.getElementById('btn-explorer-link')?.addEventListener('click', () => {
+        if (!state.address) return;
         window.open(`https://albatross.nimiqscan.com/account/${state.address.replace(/\s+/g, '')}`, '_blank');
     });
 
-    // Notification trigger
     document.getElementById('btn-notifications')?.addEventListener('click', () => {
-        showToast('Connected to Nimiq Mainnet via RPC.');
+        showToast('Connected to Nimiq Mainnet via RPC node.');
     });
 }
 
@@ -695,5 +749,9 @@ window.addEventListener('DOMContentLoaded', () => {
     setupInvoiceBuilder();
     
     updateBalanceDisplay();
-    refreshAllData();
+    if (state.address) {
+        refreshAllData();
+    } else {
+        fetchExchangeRate();
+    }
 });
