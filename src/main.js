@@ -319,7 +319,10 @@ async function refreshAllData() {
 // ==========================================
 function updateRateDisplay() {
     const rateEl = document.getElementById('display-nim-rate');
-    if (rateEl) rateEl.textContent = `$${state.usdRate.toFixed(5)}`;
+    const showcaseRate = document.getElementById('showcase-rate');
+    const formatted = `$${state.usdRate.toFixed(5)}`;
+    if (rateEl) rateEl.textContent = formatted;
+    if (showcaseRate) showcaseRate.textContent = formatted;
 }
 
 function updateBalanceDisplay() {
@@ -376,9 +379,9 @@ function renderTransactions() {
 
     if (!state.address) {
         const emptyHtml = `
-            <div class="p-6 glass-card rounded-xl text-center text-xs text-[#d7c3ae]">
+            <div class="p-6 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-2xl text-[#ffc982] mb-1">link_off</span>
-                <p>Connect your Nimiq address to load live transactions.</p>
+                <p>Connect your Nimiq address to load live mainnet transactions.</p>
             </div>
         `;
         container.innerHTML = emptyHtml;
@@ -388,7 +391,7 @@ function renderTransactions() {
 
     if (state.transactions.length === 0) {
         const emptyHtml = `
-            <div class="p-6 glass-card rounded-xl text-center text-xs text-[#d7c3ae]">
+            <div class="p-6 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                 <span class="material-symbols-outlined text-2xl text-[#ffc982] mb-1">history</span>
                 <p>No transactions recorded on mainnet for address ${state.address.slice(0, 9)}...</p>
             </div>
@@ -427,8 +430,8 @@ function renderTransactions() {
         const signStr = isIncoming ? '+' : '-';
 
         return `
-            <div class="flex items-center justify-between p-3.5 glass-card rounded-xl hover:bg-white/10 transition-all cursor-pointer group">
-                <div class="flex items-center gap-3">
+            <div class="flex items-center justify-between p-4 glass-card rounded-2xl hover:bg-white/10 transition-all cursor-pointer group">
+                <div class="flex items-center gap-3.5">
                     <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 ${colorClass}">
                         <span class="material-symbols-outlined text-lg">${iconName}</span>
                     </div>
@@ -457,7 +460,7 @@ function renderTransactions() {
     if (fullContainer) {
         if (filteredTxList.length === 0) {
             fullContainer.innerHTML = `
-                <div class="p-6 glass-card rounded-xl text-center text-xs text-[#d7c3ae]">
+                <div class="p-6 glass-card rounded-2xl text-center text-xs text-[#d7c3ae]">
                     <p>No ${state.historyFilter} transactions found.</p>
                 </div>
             `;
@@ -476,15 +479,15 @@ function setupHistoryFilterButtons() {
         state.historyFilter = activeFilter;
         [btnAll, btnSent, btnRec].forEach(btn => {
             if (!btn) return;
-            btn.className = 'px-5 py-2 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10';
+            btn.className = 'px-6 py-2.5 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10';
         });
 
         if (activeFilter === 'all' && btnAll) {
-            btnAll.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95';
+            btnAll.className = 'px-6 py-2.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
         } else if (activeFilter === 'sent' && btnSent) {
-            btnSent.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95';
+            btnSent.className = 'px-6 py-2.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
         } else if (activeFilter === 'received' && btnRec) {
-            btnRec.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95';
+            btnRec.className = 'px-6 py-2.5 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95 shadow-md';
         }
 
         renderTransactions();
@@ -515,7 +518,7 @@ function setupSendModal() {
     const btnHub = document.getElementById('btn-submit-send-hub');
     const btnToggleQr = document.getElementById('btn-toggle-send-qr');
     const qrContainer = document.getElementById('send-qr-preview-container');
-    const qrCanvas = document.getElementById('send-[#send-qr-canvas]');
+    const qrCanvas = document.getElementById('send-qr-canvas');
     const qrUriText = document.getElementById('send-qr-uri');
 
     function updateNumpadAmount(char) {
@@ -603,8 +606,7 @@ function setupSendModal() {
                 const luna = nimToLuna(amount);
                 const uri = `nimiq:${recipient.replace(/\s+/g, '')}${amount > 0 ? `?value=${luna}` : ''}`;
                 
-                const canvas = document.getElementById('send-qr-canvas');
-                QRCode.toCanvas(canvas, uri, { width: 160, margin: 1 }, (err) => {
+                QRCode.toCanvas(qrCanvas, uri, { width: 160, margin: 1 }, (err) => {
                     if (err) console.error('Send QR Error:', err);
                 });
                 if (qrUriText) qrUriText.textContent = uri;
@@ -837,7 +839,7 @@ function initShaderCanvas() {
 }
 
 // ==========================================
-// NAVIGATION & EVENT LISTENERS
+// NAVIGATION & UNIFIED CONTROLLERS
 // ==========================================
 function setupNavigation() {
     const tabs = {
@@ -846,12 +848,20 @@ function setupNavigation() {
         'profile': document.getElementById('tab-content-profile')
     };
 
-    const navBtns = {
+    const navBtnsMobile = {
         'home': document.getElementById('nav-btn-home'),
         'pay': document.getElementById('nav-btn-pay'),
         'invoice': document.getElementById('nav-btn-invoice'),
         'history': document.getElementById('nav-btn-history'),
         'profile': document.getElementById('nav-btn-profile')
+    };
+
+    const navBtnsDesktop = {
+        'home': document.getElementById('desktop-nav-home'),
+        'pay': document.getElementById('desktop-nav-pay'),
+        'invoice': document.getElementById('desktop-nav-invoice'),
+        'history': document.getElementById('desktop-nav-history'),
+        'profile': document.getElementById('desktop-nav-profile')
     };
 
     function switchTab(target) {
@@ -879,22 +889,40 @@ function setupNavigation() {
             }
         });
 
-        Object.keys(navBtns).forEach(key => {
-            if (navBtns[key]) {
+        // Mobile Nav UI
+        Object.keys(navBtnsMobile).forEach(key => {
+            if (navBtnsMobile[key]) {
                 if (key === target) {
-                    navBtns[key].classList.add('text-[#ffc982]', 'font-bold', 'scale-105');
-                    navBtns[key].classList.remove('opacity-60', 'text-[#d7c3ae]');
+                    navBtnsMobile[key].classList.add('text-[#ffc982]', 'font-bold', 'scale-105');
+                    navBtnsMobile[key].classList.remove('opacity-60', 'text-[#d7c3ae]');
                 } else {
-                    navBtns[key].classList.remove('text-[#ffc982]', 'font-bold', 'scale-105');
-                    navBtns[key].classList.add('opacity-60', 'text-[#d7c3ae]');
+                    navBtnsMobile[key].classList.remove('text-[#ffc982]', 'font-bold', 'scale-105');
+                    navBtnsMobile[key].classList.add('opacity-60', 'text-[#d7c3ae]');
+                }
+            }
+        });
+
+        // Desktop Nav UI
+        Object.keys(navBtnsDesktop).forEach(key => {
+            if (navBtnsDesktop[key]) {
+                if (key === target) {
+                    navBtnsDesktop[key].className = 'desktop-nav-btn px-5 py-2 rounded-full text-xs font-bold text-[#ffc982] bg-[#f6a623]/15 border border-[#f6a623]/30 transition-all';
+                } else {
+                    navBtnsDesktop[key].className = 'desktop-nav-btn px-5 py-2 rounded-full text-xs font-semibold text-[#d7c3ae] hover:text-white transition-all';
                 }
             }
         });
     }
 
-    Object.keys(navBtns).forEach(key => {
-        if (navBtns[key]) {
-            navBtns[key].addEventListener('click', () => switchTab(key));
+    Object.keys(navBtnsMobile).forEach(key => {
+        if (navBtnsMobile[key]) {
+            navBtnsMobile[key].addEventListener('click', () => switchTab(key));
+        }
+    });
+
+    Object.keys(navBtnsDesktop).forEach(key => {
+        if (navBtnsDesktop[key]) {
+            navBtnsDesktop[key].addEventListener('click', () => switchTab(key));
         }
     });
 
@@ -926,7 +954,6 @@ function setupModalTriggers() {
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
-    document.getElementById('btn-open-[#btn-open-invoice-builder]')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-invoice-builder-2')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-qr-scanner')?.addEventListener('click', () => openModal('modal-send'));
