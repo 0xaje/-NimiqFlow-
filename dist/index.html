@@ -31,7 +31,7 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-bvUslQCw.js"></script>
+  <script type="module" crossorigin src="/assets/index-BBlnQBsm.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-BUzop57Y.css">
 </head>
 <body class="bg-[#121414] text-[#e2e2e2] min-h-screen pb-24">
@@ -226,47 +226,162 @@
         </div>
 
         <!-- HISTORY TAB CONTENT -->
-        <div id="tab-content-history" class="hidden flex-col gap-4 animate-fade-in-up">
+        <div id="tab-content-history" class="hidden flex-col gap-5 animate-fade-in-up">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-[#ffc982]">Transaction History</h2>
                 <button id="btn-explorer-link" class="text-xs text-[#ffc982] hover:underline flex items-center gap-1">
                     <span>Explorer</span> <span class="material-symbols-outlined text-sm">open_in_new</span>
                 </button>
             </div>
-            
+
+            <!-- Filter Pills -->
+            <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                <button id="filter-btn-all" class="px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95">All</button>
+                <button id="filter-btn-sent" class="px-5 py-2 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10">Sent</button>
+                <button id="filter-btn-received" class="px-5 py-2 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10">Received</button>
+            </div>
+
+            <!-- Transactions Grouped List -->
             <div id="full-history-list" class="flex flex-col gap-2.5">
             </div>
+
+            <!-- Monthly Insight Summary Card -->
+            <section class="glass-card p-5 rounded-3xl border border-white/15 relative overflow-hidden shadow-xl mt-2">
+                <div class="relative z-10 flex flex-col gap-3">
+                    <h3 class="text-sm font-bold text-[#ffc982] flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">insights</span> Monthly Insight
+                    </h3>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-xs text-[#d7c3ae]">Total Transaction Volume</p>
+                            <p id="history-total-volume-usd" class="text-2xl font-extrabold text-white font-mono mt-0.5">$0.00</p>
+                            <p id="history-total-volume-nim" class="text-xs font-mono text-[#ffc982] font-semibold">0.00 NIM</p>
+                        </div>
+                        <div class="h-14 w-28 flex items-end gap-1.5">
+                            <div class="w-full bg-[#f6a623]/30 h-1/2 rounded-t-sm"></div>
+                            <div class="w-full bg-[#f6a623]/40 h-3/4 rounded-t-sm"></div>
+                            <div class="w-full bg-[#f6a623] h-full rounded-t-sm animate-pulse"></div>
+                            <div class="w-full bg-[#f6a623]/30 h-1/3 rounded-t-sm"></div>
+                            <div class="w-full bg-[#f6a623]/50 h-2/3 rounded-t-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- PROFILE / SETTINGS TAB CONTENT -->
         <div id="tab-content-profile" class="hidden flex-col gap-5 animate-fade-in-up">
-            <h2 class="text-2xl font-bold text-[#ffc982]">Wallet Settings & Node</h2>
-            
-            <div class="glass-card rounded-2xl p-5 flex flex-col gap-4">
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Custom Nimiq Address</h3>
-                <p class="text-xs text-[#d7c3ae]">Enter your Nimiq Mainnet address:</p>
-                <div class="flex flex-col gap-2">
-                    <input id="input-custom-address" type="text" placeholder="NQXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX" class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
-                    <button id="btn-save-custom-address" class="w-full bg-[#f6a623] text-[#462b00] font-bold text-xs py-2.5 rounded-xl hover:opacity-90 transition-opacity">
-                        Set Active Address
+            <!-- Profile Header Card -->
+            <section class="glass-card rounded-3xl p-6 border border-white/15 flex flex-col items-center relative overflow-hidden shadow-xl text-center">
+                <div class="w-20 h-20 rounded-full border-2 border-[#f6a623] p-1 bg-[#1e2020] mb-3 flex items-center justify-center">
+                    <div class="w-full h-full rounded-full bg-[#f6a623]/20 flex items-center justify-center text-[#ffc982]">
+                        <span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+                    </div>
+                </div>
+                <h2 class="text-xl font-bold text-white tracking-tight">KorriPay Wallet User</h2>
+                <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full border border-white/10 mt-1 mb-4">
+                    <span id="profile-address-display" class="text-xs font-mono text-[#ffc982]">Not Connected</span>
+                    <button id="btn-profile-copy-addr" class="text-white/60 hover:text-[#ffc982] transition-colors">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
                     </button>
                 </div>
+                
+                <div class="grid grid-cols-2 gap-4 w-full pt-3 border-t border-white/10">
+                    <div class="text-center">
+                        <p class="text-[11px] text-[#d7c3ae] uppercase font-semibold">Net Worth (USD)</p>
+                        <p id="profile-net-worth" class="text-lg font-bold text-white font-mono">$0.00</p>
+                    </div>
+                    <div class="text-center border-l border-white/10">
+                        <p class="text-[11px] text-[#d7c3ae] uppercase font-semibold">Holdings (NIM)</p>
+                        <p id="profile-nim-holdings" class="text-lg font-bold text-[#ffc982] font-mono">0.00 NIM</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preferences Settings List -->
+            <section class="flex flex-col gap-3">
+                <h3 class="text-xs font-bold text-[#d7c3ae] uppercase tracking-wider px-1">Preferences & Security</h3>
+                
+                <div class="glass-card rounded-2xl overflow-hidden border border-white/10 flex flex-col divide-y divide-white/10">
+                    <!-- Network & Node -->
+                    <div class="p-4 flex items-center justify-between hover:bg-white/5 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                                <span class="material-symbols-outlined text-lg">security</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-white">Mainnet RPC Node</p>
+                                <p class="text-[11px] font-mono text-emerald-400">https://rpc.nimiqwatch.com</p>
+                            </div>
+                        </div>
+                        <span class="text-[11px] bg-emerald-500/20 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full">ACTIVE</span>
+                    </div>
+
+                    <!-- Connected Wallets -->
+                    <button id="btn-profile-connected-wallets" class="p-4 flex items-center justify-between hover:bg-white/5 transition-all text-left w-full">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#f6a623]/20 text-[#ffc982] flex items-center justify-center border border-[#f6a623]/30">
+                                <span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-white">Connected Providers</p>
+                                <p class="text-[11px] text-[#d7c3ae]">Nimiq Hub, MetaMask, Phantom</p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-[#d7c3ae] text-sm">chevron_right</span>
+                    </button>
+
+                    <!-- Notifications -->
+                    <button id="btn-profile-notifications" class="p-4 flex items-center justify-between hover:bg-white/5 transition-all text-left w-full">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
+                                <span class="material-symbols-outlined text-lg">notifications_active</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-white">Network Notifications</p>
+                                <p class="text-[11px] text-[#d7c3ae]">RPC Block Updates Live</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] bg-[#f6a623] text-[#462b00] font-bold px-2 py-0.5 rounded-full">LIVE</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Custom Address Input -->
+            <div class="glass-card rounded-2xl p-5 flex flex-col gap-3 border border-white/10">
+                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Set Custom Nimiq Address</h3>
+                <input id="input-custom-address" type="text" placeholder="NQXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX" class="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
+                <button id="btn-save-custom-address" class="w-full bg-[#f6a623] text-[#462b00] font-bold text-xs py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+                    Set Active Address
+                </button>
             </div>
 
-            <div class="glass-card rounded-2xl p-5 flex flex-col gap-3">
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Network RPC Endpoint</h3>
-                <div class="flex items-center justify-between text-xs py-1">
-                    <span class="text-[#d7c3ae]">RPC Node:</span>
-                    <span class="font-mono text-emerald-400 font-semibold">https://rpc.nimiqwatch.com</span>
-                </div>
-                <div class="flex items-center justify-between text-xs py-1">
-                    <span class="text-[#d7c3ae]">Rate Source:</span>
-                    <span class="font-mono text-white font-semibold">CoinGecko API (nimiq-2)</span>
-                </div>
-                <div class="flex items-center justify-between text-xs py-1">
-                    <span class="text-[#d7c3ae]">Checkout Protocol:</span>
-                    <span class="font-mono text-[#ffc982] font-semibold">Nimiq Hub API (@nimiq/hub-api)</span>
-                </div>
+            <!-- Support & Disconnect -->
+            <section class="flex flex-col gap-2.5">
+                <button id="btn-profile-support" class="w-full glass-card p-4 rounded-2xl flex items-center justify-between hover:bg-white/5 transition-all border border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                            <span class="material-symbols-outlined text-lg">help</span>
+                        </div>
+                        <span class="text-xs font-bold text-white">Nimiq Explorer & Support</span>
+                    </div>
+                    <span class="material-symbols-outlined text-[#d7c3ae] text-sm">open_in_new</span>
+                </button>
+
+                <button id="btn-profile-logout" class="w-full glass-card p-4 rounded-2xl flex items-center justify-between hover:bg-red-500/20 transition-all border border-red-500/30 text-red-400">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-lg">logout</span>
+                        </div>
+                        <span class="text-xs font-bold">Disconnect Wallet</span>
+                    </div>
+                </button>
+            </section>
+
+            <!-- Version Info -->
+            <div class="text-center py-2">
+                <p class="text-xs font-mono text-[#d7c3ae]">KorriPay Mini v2.4.0 (Mainnet Production)</p>
+                <p class="text-[10px] text-white/50 mt-0.5">Powered by Nimiq Albatross PoS Network</p>
             </div>
         </div>
 
@@ -367,7 +482,6 @@
                 </button>
             </div>
 
-            <!-- Recipient Input Section -->
             <div class="flex flex-col gap-2">
                 <label class="block text-xs font-semibold text-[#d7c3ae]">Recipient Address</label>
                 <div class="relative">
@@ -378,7 +492,6 @@
                 </div>
             </div>
 
-            <!-- Amount Entry Display -->
             <div class="text-center py-2 bg-white/5 rounded-2xl border border-white/10">
                 <p class="text-[11px] text-[#d7c3ae] uppercase font-semibold">Enter Amount (NIM)</p>
                 <div class="flex items-baseline justify-center gap-1.5 my-1">
@@ -392,12 +505,10 @@
                 </div>
             </div>
 
-            <!-- Optional Note -->
             <div>
                 <input id="send-message" type="text" placeholder="Payment note (optional)" class="w-full bg-black/50 border border-white/20 rounded-xl px-3.5 py-2 text-xs text-white focus:border-[#ffc982] focus:outline-none"/>
             </div>
 
-            <!-- Numeric Keypad (3x4 Grid) -->
             <div class="keypad-grid grid grid-cols-3 gap-2">
                 <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="1">1</button>
                 <button class="numpad-btn bg-white/5 hover:bg-white/15 text-white font-bold text-xl h-12 rounded-xl flex items-center justify-center border border-white/10 active:scale-95 transition-all" data-num="2">2</button>
@@ -415,13 +526,11 @@
                 </button>
             </div>
 
-            <!-- QR Preview Container -->
             <div id="send-qr-preview-container" class="hidden flex-col items-center justify-center p-4 bg-white rounded-2xl mt-1">
                 <canvas id="send-qr-canvas"></canvas>
                 <p class="text-[11px] text-gray-700 font-mono mt-2 text-center break-all" id="send-qr-uri"></p>
             </div>
 
-            <!-- Action Buttons -->
             <div class="flex flex-col gap-2 mt-1">
                 <button id="btn-submit-send-hub" class="w-full bg-[#f6a623] text-[#462b00] font-bold py-3 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg">
                     <span>Review Transaction</span>

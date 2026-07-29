@@ -13,6 +13,7 @@ let state = {
     usdRate: 0.00047,
     usdBalance: 0,
     transactions: [],
+    historyFilter: 'all', // 'all' | 'sent' | 'received'
     isLoading: false,
     activeTab: 'home',
     sendAmountStr: '0'
@@ -119,7 +120,7 @@ function showToast(message) {
 }
 
 // ==========================================
-// WALLET PROVIDER CONNECTORS
+// WALLET PROVIDER CONNECTORS & LOGOUT
 // ==========================================
 async function connectNimiqWallet() {
     if (hubApi) {
@@ -211,6 +212,17 @@ function setAddress(newAddr) {
     refreshAllData();
 }
 
+function disconnectWallet() {
+    state.address = '';
+    state.nimBalance = 0;
+    state.usdBalance = 0;
+    state.transactions = [];
+    localStorage.removeItem('korripay_address');
+    updateBalanceDisplay();
+    renderTransactions();
+    showToast('Wallet disconnected successfully.');
+}
+
 // ==========================================
 // REAL BLOCKCHAIN & API INTEGRATION
 // ==========================================
@@ -265,7 +277,7 @@ async function fetchNimiqTransactions() {
         const payload = {
             jsonrpc: "2.0",
             method: "getTransactionsByAddress",
-            params: [state.address, 15, null],
+            params: [state.address, 25, null],
             id: 1
         };
 
@@ -319,12 +331,20 @@ function updateBalanceDisplay() {
     const connectBanner = document.getElementById('wallet-connect-banner');
     const btnConnectLabel = document.getElementById('btn-connect-label');
 
+    // Profile elements
+    const profAddr = document.getElementById('profile-address-display');
+    const profNet = document.getElementById('profile-net-worth');
+    const profHoldings = document.getElementById('profile-nim-holdings');
+
     if (!state.address) {
         if (addrEl) addrEl.textContent = 'Not Connected';
         if (nimEl) nimEl.textContent = '0.00';
         if (usdEl) usdEl.textContent = '$0.00';
         if (receiveAddrEl) receiveAddrEl.textContent = 'Please connect wallet';
         if (sendModalBalance) sendModalBalance.textContent = '0.00 NIM';
+        if (profAddr) profAddr.textContent = 'Not Connected';
+        if (profNet) profNet.textContent = '$0.00';
+        if (profHoldings) profHoldings.textContent = '0.00 NIM';
         if (connectBanner) connectBanner.classList.remove('hidden');
         if (btnConnectLabel) btnConnectLabel.textContent = 'Connect Wallet';
         return;
@@ -340,6 +360,10 @@ function updateBalanceDisplay() {
     if (usdEl) usdEl.textContent = formatUSD(state.usdBalance);
     if (receiveAddrEl) receiveAddrEl.textContent = formattedAddr;
     if (sendModalBalance) sendModalBalance.textContent = `${formatNIM(state.nimBalance)} NIM`;
+
+    if (profAddr) profAddr.textContent = state.address.slice(0, 9) + '...' + state.address.slice(-6);
+    if (profNet) profNet.textContent = formatUSD(state.usdBalance);
+    if (profHoldings) profHoldings.textContent = `${formatNIM(state.nimBalance)} NIM`;
 
     renderReceiveQRCode();
 }
@@ -376,7 +400,26 @@ function renderTransactions() {
 
     const cleanAddress = state.address.replace(/\s+/g, '').toUpperCase();
 
-    const itemsHtml = state.transactions.map(tx => {
+    let totalVolumeLuna = 0;
+
+    const filteredTxList = state.transactions.filter(tx => {
+        const isIncoming = tx.to && tx.to.replace(/\s+/g, '').toUpperCase() === cleanAddress;
+        totalVolumeLuna += Number(tx.value || 0);
+
+        if (state.historyFilter === 'sent') return !isIncoming;
+        if (state.historyFilter === 'received') return isIncoming;
+        return true;
+    });
+
+    const totalVolumeNim = lunaToNim(totalVolumeLuna);
+    const totalVolumeUsd = totalVolumeNim * state.usdRate;
+
+    const volUsdEl = document.getElementById('history-total-volume-usd');
+    const volNimEl = document.getElementById('history-total-volume-nim');
+    if (volUsdEl) volUsdEl.textContent = formatUSD(totalVolumeUsd);
+    if (volNimEl) volNimEl.textContent = `${formatNIM(totalVolumeNim)} NIM`;
+
+    const renderTxItem = (tx) => {
         const isIncoming = tx.to && tx.to.replace(/\s+/g, '').toUpperCase() === cleanAddress;
         const valNim = lunaToNim(tx.value);
         const iconName = isIncoming ? 'arrow_downward' : 'arrow_upward';
@@ -407,10 +450,49 @@ function renderTransactions() {
                 </div>
             </div>
         `;
-    }).join('');
+    };
 
-    container.innerHTML = itemsHtml;
-    if (fullContainer) fullContainer.innerHTML = itemsHtml;
+    container.innerHTML = state.transactions.slice(0, 5).map(renderTxItem).join('');
+
+    if (fullContainer) {
+        if (filteredTxList.length === 0) {
+            fullContainer.innerHTML = `
+                <div class="p-6 glass-card rounded-xl text-center text-xs text-[#d7c3ae]">
+                    <p>No ${state.historyFilter} transactions found.</p>
+                </div>
+            `;
+        } else {
+            fullContainer.innerHTML = filteredTxList.map(renderTxItem).join('');
+        }
+    }
+}
+
+function setupHistoryFilterButtons() {
+    const btnAll = document.getElementById('filter-btn-all');
+    const btnSent = document.getElementById('filter-btn-sent');
+    const btnRec = document.getElementById('filter-btn-received');
+
+    const updateFilterUI = (activeFilter) => {
+        state.historyFilter = activeFilter;
+        [btnAll, btnSent, btnRec].forEach(btn => {
+            if (!btn) return;
+            btn.className = 'px-5 py-2 rounded-full bg-white/10 text-[#d7c3ae] hover:text-white font-semibold text-xs transition-all active:scale-95 border border-white/10';
+        });
+
+        if (activeFilter === 'all' && btnAll) {
+            btnAll.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95';
+        } else if (activeFilter === 'sent' && btnSent) {
+            btnSent.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95';
+        } else if (activeFilter === 'received' && btnRec) {
+            btnRec.className = 'px-5 py-2 rounded-full bg-[#f6a623] text-[#462b00] font-bold text-xs transition-all active:scale-95';
+        }
+
+        renderTransactions();
+    };
+
+    if (btnAll) btnAll.addEventListener('click', () => updateFilterUI('all'));
+    if (btnSent) btnSent.addEventListener('click', () => updateFilterUI('sent'));
+    if (btnRec) btnRec.addEventListener('click', () => updateFilterUI('received'));
 }
 
 function renderReceiveQRCode() {
@@ -433,7 +515,7 @@ function setupSendModal() {
     const btnHub = document.getElementById('btn-submit-send-hub');
     const btnToggleQr = document.getElementById('btn-toggle-send-qr');
     const qrContainer = document.getElementById('send-qr-preview-container');
-    const qrCanvas = document.getElementById('send-qr-canvas');
+    const qrCanvas = document.getElementById('send-[#send-qr-canvas]');
     const qrUriText = document.getElementById('send-qr-uri');
 
     function updateNumpadAmount(char) {
@@ -468,7 +550,6 @@ function setupSendModal() {
         if (sendUsdEq) sendUsdEq.textContent = `≈ ${formatUSD(usdVal)} USD`;
     }
 
-    // Attach keypad event listeners
     document.querySelectorAll('.numpad-btn[data-num]').forEach(btn => {
         btn.addEventListener('click', () => {
             const char = btn.getAttribute('data-num');
@@ -522,7 +603,8 @@ function setupSendModal() {
                 const luna = nimToLuna(amount);
                 const uri = `nimiq:${recipient.replace(/\s+/g, '')}${amount > 0 ? `?value=${luna}` : ''}`;
                 
-                QRCode.toCanvas(qrCanvas, uri, { width: 160, margin: 1 }, (err) => {
+                const canvas = document.getElementById('send-qr-canvas');
+                QRCode.toCanvas(canvas, uri, { width: 160, margin: 1 }, (err) => {
                     if (err) console.error('Send QR Error:', err);
                 });
                 if (qrUriText) qrUriText.textContent = uri;
@@ -840,9 +922,11 @@ function setupModalTriggers() {
 
     document.getElementById('btn-connect-hub')?.addEventListener('click', openConnectModal);
     document.getElementById('btn-banner-connect')?.addEventListener('click', openConnectModal);
+    document.getElementById('btn-profile-connected-wallets')?.addEventListener('click', openConnectModal);
 
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
+    document.getElementById('btn-open-[#btn-open-invoice-builder]')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-invoice-builder-2')?.addEventListener('click', () => openModal('modal-invoice-builder'));
     document.getElementById('btn-open-qr-scanner')?.addEventListener('click', () => openModal('modal-send'));
@@ -862,6 +946,7 @@ function setupModalTriggers() {
 
     document.getElementById('btn-copy-address')?.addEventListener('click', doCopy);
     document.getElementById('btn-copy-receive-address')?.addEventListener('click', doCopy);
+    document.getElementById('btn-profile-copy-addr')?.addEventListener('click', doCopy);
 
     document.getElementById('btn-refresh-data')?.addEventListener('click', refreshAllData);
 
@@ -878,12 +963,24 @@ function setupModalTriggers() {
         });
     }
 
-    document.getElementById('btn-explorer-link')?.addEventListener('click', () => {
-        if (!state.address) return;
+    const openExplorer = () => {
+        if (!state.address) {
+            window.open('https://albatross.nimiqscan.com', '_blank');
+            return;
+        }
         window.open(`https://albatross.nimiqscan.com/account/${state.address.replace(/\s+/g, '')}`, '_blank');
-    });
+    };
+
+    document.getElementById('btn-explorer-link')?.addEventListener('click', openExplorer);
+    document.getElementById('btn-profile-support')?.addEventListener('click', openExplorer);
+
+    document.getElementById('btn-profile-logout')?.addEventListener('click', disconnectWallet);
 
     document.getElementById('btn-notifications')?.addEventListener('click', () => {
+        showToast('Connected to Nimiq Mainnet via RPC node.');
+    });
+
+    document.getElementById('btn-profile-notifications')?.addEventListener('click', () => {
         showToast('Connected to Nimiq Mainnet via RPC node.');
     });
 }
@@ -900,6 +997,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupWalletConnectModal();
     setupSendModal();
     setupInvoiceBuilder();
+    setupHistoryFilterButtons();
     
     updateBalanceDisplay();
     if (state.address) {
