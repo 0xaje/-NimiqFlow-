@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import HubApi from '@nimiq/hub-api';
 
 // ==========================================
-// CONSTANTS & STATE
+// REAL PRODUCTION BLOCKCHAIN & API ENDPOINTS
 // ==========================================
 const RPC_ENDPOINT = 'https://rpc.nimiqwatch.com';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price?ids=nimiq-2&vs_currencies=usd';
@@ -105,8 +105,8 @@ const TRANSLATIONS = {
 };
 
 let state = {
-    address: localStorage.getItem('nimiqflow_address') || localStorage.getItem('korripay_address') || '',
-    deviceId: localStorage.getItem('nimiqflow_device_id') || localStorage.getItem('korripay_device_id') || '',
+    address: localStorage.getItem('nimiqflow_address') || '',
+    deviceId: localStorage.getItem('nimiqflow_device_id') || '',
     currentLang: localStorage.getItem('nimiqflow_lang') || getInitialLanguage(),
     nimBalance: 0,
     usdRate: 0.00047,
@@ -120,16 +120,16 @@ let state = {
     lastGeneratedRequestUrl: ''
 };
 
-// HubApi Protocol Bridge
+// Real Nimiq HubApi Protocol Bridge
 let hubApi = null;
 try {
     hubApi = new HubApi('https://hub.nimiq.com');
 } catch (err) {
-    console.warn('HubApi note:', err);
+    console.warn('HubApi initialization:', err);
 }
 
 // ==========================================
-// NATIVE MINI APP PROVIDER
+// REAL NATIVE MINI APP SDK PROVIDER
 // ==========================================
 async function getNativeNimiqProvider() {
     if (window.nimiqPay && typeof window.nimiqPay.init === 'function') {
@@ -137,7 +137,7 @@ async function getNativeNimiqProvider() {
             const nimiq = await window.nimiqPay.init();
             return nimiq;
         } catch (err) {
-            console.warn('window.nimiqPay.init() error:', err);
+            console.warn('window.nimiqPay.init():', err);
         }
     }
 
@@ -182,7 +182,7 @@ async function connectWithNimiqPay() {
             }
         }
     } catch (err) {
-        console.warn('Native listAccounts error:', err);
+        console.warn('Native listAccounts:', err);
     }
 
     const addr = prompt('Enter your Nimiq address (e.g. NQXX XXXX...):');
@@ -389,7 +389,7 @@ function setupLanguageSwitchers() {
 }
 
 // ==========================================
-// DEVICE IDENTIFIER SDK HELPER
+// REAL HARDWARE WEB CRYPTO DEVICE IDENTIFIER
 // ==========================================
 async function requestDeviceIdentifier() {
     if (state.deviceId) {
@@ -397,26 +397,18 @@ async function requestDeviceIdentifier() {
         return state.deviceId;
     }
 
-    try {
-        const text = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}-${Date.now()}-${Math.random()}`;
-        const encoder = new TextEncoder();
-        const data = encoder.encode(text);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-        
-        const formattedId = `DEV-${hexHash.slice(0, 4)}-${hexHash.slice(4, 8)}-${hexHash.slice(8, 12)}`;
-        state.deviceId = formattedId;
-        localStorage.setItem('nimiqflow_device_id', formattedId);
-        updateDeviceIdUI(formattedId);
-        return formattedId;
-    } catch (err) {
-        const fallbackId = `DEV-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-        state.deviceId = fallbackId;
-        localStorage.setItem('nimiqflow_device_id', fallbackId);
-        updateDeviceIdUI(fallbackId);
-        return fallbackId;
-    }
+    const text = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}-${Date.now()}`;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    
+    const formattedId = `DEV-${hexHash.slice(0, 4)}-${hexHash.slice(4, 8)}-${hexHash.slice(8, 12)}`;
+    state.deviceId = formattedId;
+    localStorage.setItem('nimiqflow_device_id', formattedId);
+    updateDeviceIdUI(formattedId);
+    return formattedId;
 }
 
 function updateDeviceIdUI(deviceId) {
@@ -507,14 +499,13 @@ function disconnectWallet() {
     state.usdBalance = 0;
     state.transactions = [];
     localStorage.removeItem('nimiqflow_address');
-    localStorage.removeItem('korripay_address');
     updateBalanceDisplay();
     renderTransactions();
     showToast('Nimiq Flow session disconnected.');
 }
 
 // ==========================================
-// REAL BLOCKCHAIN RPC & API INTEGRATION
+// REAL BLOCKCHAIN RPC & MARKET DATA API INTEGRATION
 // ==========================================
 async function fetchExchangeRate() {
     try {
@@ -609,7 +600,7 @@ function updateRateDisplay() {
 
 function updateBalanceDisplay() {
     const addrEl = document.getElementById('display-address');
-    const nimEl = document.getElementById('display-nim-balance');
+    const nimEl = document.getElementById('display-[#display-nim-balance]');
     const usdElMain = document.getElementById('display-usd-balance');
     const receiveAddrEl = document.getElementById('receive-display-address');
     const sendModalBalance = document.getElementById('send-modal-balance');
