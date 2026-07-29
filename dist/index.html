@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-    <title>KorriPay - Real Nimiq (NIM) Web Wallet & Smart Invoices</title>
+    <title>KorriPay Mini - Real Nimiq Web Wallet & Smart Invoices</title>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
     <!-- CDN Tailwind for layout classes -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -31,10 +31,10 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-Bv46MFxr.js"></script>
+  <script type="module" crossorigin src="/assets/index-DgOOu5ZU.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-BUzop57Y.css">
 </head>
-<body class="bg-[#121414] text-[#e2e2e2] min-h-screen">
+<body class="bg-[#121414] text-[#e2e2e2] min-h-screen pb-24">
     <!-- SPLASH SCREEN OVERLAY -->
     <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121414] transition-opacity duration-700">
         <div class="absolute inset-0 pointer-events-none opacity-25">
@@ -74,7 +74,7 @@
                 <span class="material-symbols-outlined text-[#ffc982]">account_balance_wallet</span>
             </div>
             <div class="flex flex-col">
-                <span class="text-xl font-bold text-[#ffc982] tracking-tight">KorriPay</span>
+                <span class="text-xl font-bold text-[#ffc982] tracking-tight">KorriPay Mini</span>
                 <div class="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                     <span id="network-status">Nimiq Mainnet Live</span>
@@ -93,14 +93,14 @@
     </header>
 
     <!-- Main Container -->
-    <main class="pt-24 pb-32 px-4 max-w-xl mx-auto flex flex-col gap-5">
+    <main class="pt-20 px-4 max-w-xl mx-auto flex flex-col gap-5">
         
-        <!-- WALLET NOT CONNECTED PROMPT -->
+        <!-- WALLET NOT CONNECTED PROMPT BANNER -->
         <div id="wallet-connect-banner" class="glass-card rounded-2xl p-6 border border-[#ffc982]/30 text-center flex flex-col items-center gap-3 animate-fade-in-up">
             <div class="w-12 h-12 rounded-full bg-[#ffc982]/10 flex items-center justify-center border border-[#ffc982]/30 text-[#ffc982]">
                 <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
             </div>
-            <h2 class="text-lg font-bold text-white">Connect Your Wallet</h2>
+            <h2 class="text-lg font-bold text-white">Connect Your Nimiq Wallet</h2>
             <p class="text-xs text-[#d7c3ae] max-w-sm">
                 Connect your real Nimiq Hub account, Web3 wallet, or Nimiq address to inspect live mainnet balance, broadcast real transactions, and generate smart invoices.
             </p>
@@ -113,82 +113,97 @@
 
         <!-- HOME TAB CONTENT -->
         <div id="tab-content-home" class="flex flex-col gap-5">
-            <!-- Wallet Card Section -->
-            <section class="relative overflow-hidden rounded-[24px] glass-card p-6 animate-fade-in-up border border-white/10 shadow-2xl">
-                <div class="absolute inset-0 z-0 pointer-events-none opacity-30">
+            <!-- Hero Glassmorphic Balance Card Section -->
+            <section id="hero-balance-card" class="relative w-full rounded-[24px] overflow-hidden shadow-[0_12px_32px_rgba(246,166,35,0.25)] bg-gradient-to-br from-[#f6a623] to-[#835400] flex flex-col justify-between p-6 text-white border border-white/20 transition-all duration-300">
+                <!-- Ambient decorative elements -->
+                <div class="absolute -top-12 -right-12 w-48 h-48 bg-white/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-black/20 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <!-- WebGL Shader Background Canvas -->
+                <div class="absolute inset-0 z-0 pointer-events-none opacity-25">
                     <canvas id="shader-canvas" class="w-full h-full block"></canvas>
                 </div>
-                
-                <div class="relative z-10 flex flex-col gap-4">
+
+                <div class="relative z-10 flex flex-col gap-1">
                     <div class="flex justify-between items-start">
-                        <div class="flex flex-col">
-                            <span class="text-xs uppercase tracking-wider text-[#d7c3ae] font-semibold">Active Nimiq Wallet</span>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <span id="display-address" class="text-xs font-mono text-[#ffc982] bg-white/10 px-2 py-0.5 rounded border border-white/10 tracking-tight">Not Connected</span>
-                                <button id="btn-copy-address" title="Copy Address" class="text-white/60 hover:text-[#ffc982] transition-colors">
-                                    <span class="material-symbols-outlined text-sm">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-[#ffc982] text-2xl">account_balance_wallet</span>
-                    </div>
-
-                    <div class="flex flex-col mt-2">
-                        <h1 class="text-4xl sm:text-5xl font-extrabold text-[#ffc982] flex items-baseline gap-2 tracking-tight">
-                            <span id="display-nim-balance">0.00</span> <span class="text-xl font-bold text-[#ffc982]">NIM</span>
-                        </h1>
-                        <div class="flex items-center gap-3 mt-1">
-                            <p class="text-[#d7c3ae] text-sm font-medium">
-                                ≈ <span id="display-usd-balance">$0.00</span> USD
-                            </p>
-                            <span class="text-xs text-white/50">|</span>
-                            <p class="text-xs text-[#d7c3ae]">
-                                1 NIM = <span id="display-nim-rate" class="text-white font-mono">$0.00</span>
-                            </p>
+                        <span class="text-xs uppercase tracking-wider text-white/90 font-semibold">Total Balance (USD)</span>
+                        <div class="flex items-center gap-1 text-[11px] bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-white font-semibold">
+                            <span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                            <span>Live RPC Rate</span>
                         </div>
                     </div>
-
-                    <div class="mt-3 flex items-center justify-between pt-3 border-t border-white/10">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-semibold text-emerald-400">
-                                Real RPC Live Data
-                            </span>
-                        </div>
-                        <button id="btn-refresh-data" class="text-xs text-[#ffc982] hover:underline flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm">refresh</span> Refresh
+                    <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mt-1">
+                        <span id="display-usd-balance">$0.00</span>
+                    </h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-white/80">Active Nimiq Address:</span>
+                        <span id="display-address" class="text-xs font-mono text-white bg-black/30 px-2 py-0.5 rounded border border-white/20 select-all">Not Connected</span>
+                        <button id="btn-copy-address" title="Copy Address" class="text-white/80 hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-sm">content_copy</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Crypto Sub-Card -->
+                <div class="relative z-10 glass rounded-xl p-3.5 mt-5 flex items-center justify-between border border-white/30 bg-black/20 backdrop-blur-md">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-[#ffc982]">
+                            <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+                        </div>
+                        <div>
+                            <p class="text-[11px] text-white/80 font-semibold uppercase">Nimiq Crypto Holdings</p>
+                            <p class="text-sm font-bold font-mono text-white">
+                                <span id="display-nim-balance">0.00</span> NIM
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-white/70">Rate (1 NIM):</p>
+                        <p class="text-xs font-mono font-bold text-[#ffc982]" id="display-nim-rate">$0.00047</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Quick Action Buttons -->
-            <div class="grid grid-cols-2 gap-3 animate-fade-in-up delay-1">
-                <button id="btn-open-send" class="bg-[#f6a623] h-14 rounded-2xl flex items-center justify-between px-5 hover:opacity-95 transition-all active:scale-[0.98] shadow-[0_8px_24px_rgba(246,166,35,0.25)]">
-                    <span class="text-[#462b00] font-bold text-base">Send NIM</span>
-                    <div class="w-8 h-8 bg-[#462b00] rounded-full flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[#f6a623] text-lg font-bold">arrow_forward</span>
+            <!-- Quick Actions Grid (4 Icons) -->
+            <section class="grid grid-cols-4 gap-3 animate-fade-in-up delay-1">
+                <button id="btn-open-send" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
+                    <div class="w-14 h-14 rounded-2xl bg-[#f6a623]/15 border border-[#f6a623]/30 flex items-center justify-center text-[#ffc982] group-hover:bg-[#f6a623] group-hover:text-[#462b00] transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-[26px]">send</span>
                     </div>
+                    <span class="text-xs font-semibold text-[#d7c3ae]">Send</span>
                 </button>
-                <button id="btn-open-receive" class="bg-white/10 border border-white/10 hover:bg-white/15 h-14 rounded-2xl flex items-center justify-between px-5 transition-all active:scale-[0.98]">
-                    <span class="text-[#ffc982] font-bold text-base">Receive NIM</span>
-                    <div class="w-8 h-8 bg-[#ffc982]/20 rounded-full flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[#ffc982] text-lg font-bold">qr_code_2</span>
+                <button id="btn-open-receive" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
+                    <div class="w-14 h-14 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 group-hover:bg-sky-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-[26px]">call_received</span>
                     </div>
+                    <span class="text-xs font-semibold text-[#d7c3ae]">Receive</span>
                 </button>
-            </div>
+                <button id="btn-open-invoice-builder" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-[26px]">receipt_long</span>
+                    </div>
+                    <span class="text-xs font-semibold text-[#d7c3ae]">Invoice</span>
+                </button>
+                <button id="btn-open-qr-scanner" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-300 group-hover:bg-purple-500 group-hover:text-white transition-colors duration-300 shadow-md">
+                        <span class="material-symbols-outlined text-[26px]">qr_code_scanner</span>
+                    </div>
+                    <span class="text-xs font-semibold text-[#d7c3ae]">QR Pay</span>
+                </button>
+            </section>
 
-            <!-- Smart AI Invoice Card -->
-            <section class="bg-[#181a1a] rounded-[24px] p-6 border border-[#ffc982]/20 relative overflow-hidden animate-fade-in-up delay-2 shadow-xl">
+            <!-- Smart AI Invoice Banner Card -->
+            <section class="bg-[#181a1a] rounded-[24px] p-5 border border-[#ffc982]/20 relative overflow-hidden animate-fade-in-up delay-2 shadow-xl">
                 <div class="absolute -right-12 -top-12 w-36 h-36 bg-[#ffc982]/15 blur-[60px] rounded-full"></div>
-                <div class="relative z-10 flex flex-col gap-3">
+                <div class="relative z-10 flex flex-col gap-2.5">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[#ffc982]">auto_awesome</span>
-                        <h3 class="text-base font-bold text-white">Smart Invoice Generator</h3>
+                        <h3 class="text-base font-bold text-white">Smart AI Invoice Generator</h3>
                     </div>
                     <p class="text-[#d7c3ae] text-xs leading-relaxed">
-                        Create real itemized invoices calculated live in USD/NIM with QR payment requests and PDF export.
+                        Generate real itemized invoices with live USD/NIM price calculations, scan-to-pay QR requests, and instant PDF/Print export.
                     </p>
-                    <button id="btn-open-invoice-builder" class="w-fit px-5 py-2 mt-1 bg-[#ffc982]/10 border border-[#ffc982]/30 rounded-full text-[#ffc982] font-semibold text-xs hover:bg-[#ffc982] hover:text-[#462b00] transition-all shadow-[0_0_15px_rgba(255,201,130,0.15)] flex items-center gap-1.5">
+                    <button id="btn-open-invoice-builder-2" class="w-fit px-4 py-2 mt-1 bg-[#ffc982]/10 border border-[#ffc982]/30 rounded-full text-[#ffc982] font-semibold text-xs hover:bg-[#ffc982] hover:text-[#462b00] transition-all shadow-[0_0_15px_rgba(255,201,130,0.15)] flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-sm">receipt_long</span> Create Smart Invoice
                     </button>
                 </div>
@@ -279,7 +294,6 @@
             </div>
 
             <div class="flex flex-col gap-2.5">
-                <!-- Nimiq Hub Wallet Option -->
                 <label class="block cursor-pointer">
                     <input type="radio" name="wallet-provider" value="nimiq" checked class="peer hidden"/>
                     <div class="flex items-center p-3.5 rounded-2xl bg-white/5 border border-white/10 peer-checked:border-[#f6a623] peer-checked:bg-[#f6a623]/15 transition-all hover:bg-white/10">
@@ -294,7 +308,6 @@
                     </div>
                 </label>
 
-                <!-- MetaMask Option -->
                 <label class="block cursor-pointer">
                     <input type="radio" name="wallet-provider" value="metamask" class="peer hidden"/>
                     <div class="flex items-center p-3.5 rounded-2xl bg-white/5 border border-white/10 peer-checked:border-[#f6a623] peer-checked:bg-[#f6a623]/15 transition-all hover:bg-white/10">
@@ -309,7 +322,6 @@
                     </div>
                 </label>
 
-                <!-- Phantom Option -->
                 <label class="block cursor-pointer">
                     <input type="radio" name="wallet-provider" value="phantom" class="peer hidden"/>
                     <div class="flex items-center p-3.5 rounded-2xl bg-white/5 border border-white/10 peer-checked:border-[#f6a623] peer-checked:bg-[#f6a623]/15 transition-all hover:bg-white/10">
@@ -324,7 +336,6 @@
                     </div>
                 </label>
 
-                <!-- Manual Address Entry -->
                 <label class="block cursor-pointer">
                     <input type="radio" name="wallet-provider" value="manual" class="peer hidden"/>
                     <div class="flex items-center p-3.5 rounded-2xl bg-white/5 border border-white/10 peer-checked:border-[#f6a623] peer-checked:bg-[#f6a623]/15 transition-all hover:bg-white/10">

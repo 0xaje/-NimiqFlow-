@@ -49,6 +49,34 @@ function initSplashScreen() {
 }
 
 // ==========================================
+// HERO CARD 3D TILT EFFECT
+// ==========================================
+function initHeroTilt() {
+    const hero = document.getElementById('hero-balance-card');
+    if (!hero) return;
+
+    hero.addEventListener('mousemove', (e) => {
+        const rect = hero.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const moveX = (x - centerX) / 25;
+        const moveY = (y - centerY) / 25;
+        hero.style.transform = `perspective(1000px) rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
+    });
+
+    hero.addEventListener('mouseleave', () => {
+        hero.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg)`;
+        hero.style.transition = 'transform 0.5s ease';
+    });
+
+    hero.addEventListener('mouseenter', () => {
+        hero.style.transition = 'none';
+    });
+}
+
+// ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
 function formatNimiqAddress(addr) {
@@ -117,7 +145,6 @@ async function connectMetaMask() {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             if (accounts && accounts[0]) {
                 showToast(`MetaMask connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
-                // Prompt user to associate or enter their Nimiq address
                 const addr = prompt('MetaMask connected! Enter your Nimiq payout address:');
                 if (addr) setAddress(addr);
             }
@@ -148,7 +175,6 @@ async function connectPhantom() {
 }
 
 function setupWalletConnectModal() {
-    const modal = document.getElementById('modal-wallet-connect');
     const btnClose = document.getElementById('btn-close-wallet-modal');
     const btnConfirm = document.getElementById('btn-confirm-wallet-connect');
 
@@ -778,6 +804,8 @@ function setupModalTriggers() {
     document.getElementById('btn-open-send')?.addEventListener('click', () => openModal('modal-send'));
     document.getElementById('btn-open-receive')?.addEventListener('click', () => openModal('modal-receive'));
     document.getElementById('btn-open-invoice-builder')?.addEventListener('click', () => openModal('modal-invoice-builder'));
+    document.getElementById('btn-open-invoice-builder-2')?.addEventListener('click', () => openModal('modal-invoice-builder'));
+    document.getElementById('btn-open-qr-scanner')?.addEventListener('click', () => openModal('modal-send'));
 
     document.getElementById('btn-close-send')?.addEventListener('click', () => closeModal('modal-send'));
     document.getElementById('btn-close-receive')?.addEventListener('click', () => closeModal('modal-receive'));
@@ -825,6 +853,7 @@ function setupModalTriggers() {
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     initSplashScreen();
+    initHeroTilt();
     initShaderCanvas();
     setupNavigation();
     setupModalTriggers();
