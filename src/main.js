@@ -1985,8 +1985,9 @@ function setupModalTriggers() {
     });
 
     document.getElementById('btn-submit-manual-connect')?.addEventListener('click', () => {
-        const input = document.getElementById('input-manual-connect-address');
-        const val = input ? input.value.trim() : '';
+        const inputAddr = document.getElementById('input-manual-connect-address');
+        const inputBal = document.getElementById('input-manual-connect-balance');
+        const val = inputAddr ? inputAddr.value.trim() : '';
         if (!val) {
             showToast('Please enter a Nimiq address');
             return;
@@ -1995,10 +1996,33 @@ function setupModalTriggers() {
             showToast('Invalid Nimiq address format. E.g.: NQ86 6B83...');
             return;
         }
+
+        const balVal = inputBal && inputBal.value ? parseFloat(inputBal.value) : null;
         setAddress(val);
+        if (balVal !== null && !isNaN(balVal) && balVal >= 0) {
+            state.balances[config.nimiqNetwork] = balVal;
+            localStorage.setItem(`nimiqflow_bal_${config.nimiqNetwork}`, balVal.toString());
+            updateBalanceDisplay();
+        }
         closeModal('modal-connect-wallet');
-        if (input) input.value = '';
+        if (inputAddr) inputAddr.value = '';
+        if (inputBal) inputBal.value = '';
         showToast(`Connected address: ${formatNimiqAddress(val)}`);
+    });
+
+    document.getElementById('btn-sync-wallet-balance')?.addEventListener('click', () => {
+        const inputSync = document.getElementById('input-sync-wallet-balance');
+        const num = inputSync && inputSync.value ? parseFloat(inputSync.value) : null;
+        if (num === null || isNaN(num) || num < 0) {
+            showToast('Please enter a valid balance NIM amount e.g. 330000');
+            return;
+        }
+        state.balances[config.nimiqNetwork] = num;
+        localStorage.setItem(`nimiqflow_bal_${config.nimiqNetwork}`, num.toString());
+        updateBalanceDisplay();
+        closeModal('modal-connect-wallet');
+        if (inputSync) inputSync.value = '';
+        showToast(`Synced Nimiq Pay wallet balance: ${formatNIM(num)} NIM`);
     });
 
     document.getElementById('btn-modal-copy-addr')?.addEventListener('click', doCopy);
