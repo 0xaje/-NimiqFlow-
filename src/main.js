@@ -1255,18 +1255,14 @@ async function fetchNimiqAccountData() {
     const storedBalStr = localStorage.getItem(`nimiqflow_bal_${activeNet}`);
     const storedBal = storedBalStr !== null ? parseFloat(storedBalStr) : null;
 
-    // Determine final balance: priority to injected provider -> on-chain rpc -> stored local balance
+    // Determine final balance: priority to on-chain rpc -> injected provider -> stored local balance
     let finalBal = 0;
-    if (detectedNimVal !== null && detectedNimVal > 0) {
-        finalBal = detectedNimVal;
-    } else if (rpcNimVal > 0) {
+    if (rpcNimVal > 0) {
         finalBal = rpcNimVal;
+    } else if (detectedNimVal !== null && detectedNimVal > 0) {
+        finalBal = detectedNimVal;
     } else if (storedBal !== null && storedBal > 0) {
         finalBal = storedBal;
-    } else if (activeNet === 'TestAlbatross') {
-        // Auto-provision 10,000 Testnet NIM for newly connected testnet address to ensure instant transaction testing
-        finalBal = 10000;
-        showToast('Auto-provisioned 10,000 Testnet NIM for instant testing!');
     }
 
     state.balances[activeNet] = finalBal;
@@ -1715,14 +1711,6 @@ function setupSendModal() {
         });
     }
 
-    if (btnDemoAddr && recipientInput) {
-        btnDemoAddr.addEventListener('click', () => {
-            recipientInput.value = formatNimiqAddress('NQ86 6B83 U28U 1L6D G20S RFTX N622 174P J7BA');
-            recipientInput.dispatchEvent(new Event('input'));
-            showToast('Demo address filled!');
-        });
-    }
-
     renderNumpadAmount();
 }
 
@@ -1976,13 +1964,6 @@ function setupModalTriggers() {
     document.getElementById('btn-quick-connect')?.addEventListener('click', openConnectModal);
     document.getElementById('btn-close-connect-modal')?.addEventListener('click', () => closeModal('modal-connect-wallet'));
     document.getElementById('btn-connect-native-sdk')?.addEventListener('click', connectWithNimiqPay);
-
-    document.getElementById('btn-connect-demo-fill')?.addEventListener('click', () => {
-        const demoAddr = 'NQ86 6B83 U28U 1L6D G20S RFTX N622 174P J7BA';
-        setAddress(demoAddr);
-        closeModal('modal-connect-wallet');
-        showToast(`Connected with Demo Testnet Address: ${formatNimiqAddress(demoAddr)}`);
-    });
 
     document.getElementById('btn-submit-manual-connect')?.addEventListener('click', () => {
         const inputAddr = document.getElementById('input-manual-connect-address');
