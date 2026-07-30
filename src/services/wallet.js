@@ -57,7 +57,7 @@ export function extractAddressFromUrl() {
 export async function detectInjectedNimiqPay() {
     // 0. Try official @nimiq/mini-app-sdk helper
     try {
-        const sdkProvider = await initMiniAppSdk({ timeout: 1000 });
+        const sdkProvider = await initMiniAppSdk({ timeout: 3000 });
         if (sdkProvider) {
             let addr = null;
             if (typeof sdkProvider.listAccounts === 'function') {
