@@ -453,8 +453,8 @@ function setupDeveloperMode() {
 
         if (headerNetworkBadge) {
             headerNetworkBadge.className = isMain
-                ? 'flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 px-2.5 py-0.5 rounded-full text-[10px] text-amber-300 font-mono font-bold cursor-pointer hover:scale-105 transition-all shadow-sm'
-                : 'flex items-center gap-1 bg-sky-500/20 border border-sky-400/40 px-2.5 py-0.5 rounded-full text-[10px] text-sky-300 font-mono font-bold cursor-pointer hover:scale-105 transition-all shadow-sm';
+                ? 'flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 px-2 py-1 sm:px-2.5 rounded-xl text-[10px] text-amber-300 font-mono font-bold cursor-pointer hover:bg-amber-500/30 active:scale-95 transition-all shadow-sm shrink-0'
+                : 'flex items-center gap-1 bg-sky-500/20 border border-sky-400/40 px-2 py-1 sm:px-2.5 rounded-xl text-[10px] text-sky-300 font-mono font-bold cursor-pointer hover:bg-sky-500/30 active:scale-95 transition-all shadow-sm shrink-0';
         }
 
         // Toggle visibility of Faucet buttons and cards
