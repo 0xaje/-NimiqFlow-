@@ -9,7 +9,11 @@ import {
     fetchRpcConsensusStatus,
     claimFaucetTokens
 } from './services/rpc.js';
-import { getNativeNimiqProvider, isValidNimiqAddress } from './services/wallet.js';
+import { 
+    getNativeNimiqProvider, 
+    isValidNimiqAddress, 
+    detectInjectedNimiqPay 
+} from './services/wallet.js';
 
 // ==========================================
 // STATE & TRANSLATIONS
@@ -569,18 +573,29 @@ async function updateDeveloperDiagnosticsUI() {
 }
 
 // ==========================================
-// WALLET CONNECT
+// WALLET CONNECT & NATIVE IN-APP AUTO-DETECTION
 // ==========================================
-function openConnectModal() {
+async function openConnectModal() {
     const modal = document.getElementById('modal-connect-wallet');
     const connectedView = document.getElementById('connect-modal-connected-view');
     const optionsView = document.getElementById('connect-modal-options-view');
     const addrDisp = document.getElementById('connect-modal-address');
     const netBadge = document.getElementById('connect-modal-net-badge');
+    const inappBadge = document.getElementById('nimiq-pay-inapp-badge');
 
     if (!modal) return;
 
     if (netBadge) netBadge.textContent = config.nimiqNetwork;
+
+    // Check for native Nimiq Pay in-app browser detection
+    const detected = await detectInjectedNimiqPay();
+    if (inappBadge) {
+        if (detected) {
+            inappBadge.classList.remove('hidden');
+        } else {
+            inappBadge.classList.add('hidden');
+        }
+    }
 
     if (state.address) {
         if (connectedView) {
@@ -610,7 +625,18 @@ function openConnectModal() {
 
 async function connectWithNimiqPay() {
     try {
-        showToast('Opening Nimiq Pay / Hub connection...');
+        showToast('Connecting to Nimiq Pay wallet...');
+
+        // 1. Try instant native detection (URL params, injected objects, global window props)
+        const detected = await detectInjectedNimiqPay();
+        if (detected && detected.address) {
+            setAddress(detected.address);
+            closeModal('modal-connect-wallet');
+            showToast(`Connected via Nimiq Pay App: ${formatNimiqAddress(detected.address)}`);
+            return;
+        }
+
+        // 2. Fall back to provider (Native or HubApi)
         const nimiq = await getNativeNimiqProvider();
         if (nimiq && typeof nimiq.listAccounts === 'function') {
             const accounts = await nimiq.listAccounts();
@@ -620,15 +646,53 @@ async function connectWithNimiqPay() {
                 if (addr) {
                     setAddress(addr);
                     closeModal('modal-connect-wallet');
-                    showToast(`Connected via Nimiq Pay / Hub: ${formatNimiqAddress(addr)}`);
+                    const label = nimiq.isNativePay ? 'Nimiq Pay App' : 'Nimiq Hub';
+                    showToast(`Connected via ${label}: ${formatNimiqAddress(addr)}`);
                     return;
                 }
             }
         }
     } catch (err) {
-        console.warn('Native listAccounts:', err);
-        showToast('Nimiq Pay connection closed or cancelled.');
+        console.warn('Native listAccounts error:', err);
+        showToast('Nimiq Pay connection cancelled or closed.');
     }
+}
+
+async function autoConnectNimiqPayIfAvailable() {
+    if (state.address) return; // already connected from state/localStorage
+
+    const detected = await detectInjectedNimiqPay();
+    if (detected && detected.address) {
+        setAddress(detected.address);
+        showToast(`Auto-connected Nimiq Pay Wallet: ${formatNimiqAddress(detected.address)}`);
+        return;
+    }
+
+    // Dispatch postMessage ping for iframe / host webview shells
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NIMIQ_PAY_GET_ACCOUNT', appName: 'KorriPay' }, '*');
+            window.parent.postMessage({ type: 'NIMIQ_CONNECT_REQUEST', appName: 'KorriPay' }, '*');
+        }
+        window.postMessage({ type: 'NIMIQ_PAY_GET_ACCOUNT', appName: 'KorriPay' }, '*');
+    } catch (err) {
+        console.warn('postMessage host ping warning:', err);
+    }
+}
+
+function setupNimiqPayMessageListener() {
+    window.addEventListener('message', (event) => {
+        if (!event || !event.data) return;
+        const data = event.data;
+        const candidate = data.address || data.userAddress || (data.data && (data.data.address || data.data.userAddress));
+        if (candidate && isValidNimiqAddress(candidate)) {
+            if (state.address !== candidate) {
+                setAddress(candidate);
+                closeModal('modal-connect-wallet');
+                showToast(`Connected via Nimiq Pay: ${formatNimiqAddress(candidate)}`);
+            }
+        }
+    });
 }
 
 // ==========================================
@@ -1977,6 +2041,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupDeepLinkHandler();
     setupNetworkOfflineListeners();
     
+    setupNimiqPayMessageListener();
+    await autoConnectNimiqPayIfAvailable();
+
     updateBalanceDisplay();
     if (state.address) {
         refreshAllData();

@@ -934,10 +934,18 @@
 
             <!-- DISCONNECTED / CONNECTION OPTIONS -->
             <div id="connect-modal-options-view" class="flex flex-col gap-3">
+                <!-- Auto-Detect In-App Nimiq Pay Status Badge -->
+                <div id="nimiq-pay-inapp-badge" class="hidden p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col gap-1 text-center">
+                    <span class="text-[11px] font-bold text-amber-300 flex items-center justify-center gap-1">
+                        <span class="material-symbols-outlined text-sm">phone_android</span> Nimiq Pay App Detected
+                    </span>
+                    <span class="text-[10px] text-[#d7c3ae]">Connecting directly to your native app wallet without external sign-up.</span>
+                </div>
+
                 <!-- 1-Tap Connect via SDK / Hub -->
                 <button id="btn-connect-native-sdk" class="w-full bg-[#f6a623] text-[#462b00] font-extrabold py-3.5 rounded-2xl hover:opacity-90 transition-all text-xs flex items-center justify-center gap-2 shadow-lg active:scale-95">
                     <span class="material-symbols-outlined text-base">extension</span>
-                    <span>Connect via Nimiq Pay / Hub</span>
+                    <span>Connect Nimiq Pay Wallet</span>
                 </button>
 
                 <!-- 1-Tap Fill Demo Address -->
