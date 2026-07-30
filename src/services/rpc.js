@@ -86,15 +86,21 @@ export function formatRpcAddress(addr) {
 export async function fetchRpcAccountBalance(address) {
     if (!address) return 0;
     const formattedAddr = formatRpcAddress(address);
+    const cleanAddr = address.replace(/\s+/g, '').toUpperCase();
 
-    const result = await queryRpc('getAccountByAddress', [formattedAddr]);
+    let result = await queryRpc('getAccountByAddress', [formattedAddr]);
+    if (!result || (typeof result.balance === 'undefined' && (!result.data || typeof result.data.balance === 'undefined'))) {
+        result = await queryRpc('getAccountByAddress', [cleanAddr]);
+    }
+
     let rpcBalance = 0;
-
     if (result) {
         if (result.data && typeof result.data.balance !== 'undefined') {
             rpcBalance = Number(result.data.balance);
         } else if (typeof result.balance !== 'undefined') {
             rpcBalance = Number(result.balance);
+        } else if (typeof result === 'number') {
+            rpcBalance = result;
         }
     }
 

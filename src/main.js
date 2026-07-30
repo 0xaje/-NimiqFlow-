@@ -1226,16 +1226,16 @@ async function fetchNimiqAccountData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
 
-    if (activeNet === 'MainAlbatross') {
-        const rawBalance = await fetchRpcAccountBalance(state.address);
-        const nimVal = lunaToNim(rawBalance);
-        state.balances.MainAlbatross = nimVal;
-        localStorage.setItem('nimiqflow_bal_MainAlbatross', nimVal.toString());
-    } else {
-        if (typeof state.balances.TestAlbatross === 'undefined') {
-            state.balances.TestAlbatross = 0;
-        }
-    }
+    const rawBalance = await fetchRpcAccountBalance(state.address);
+    const rpcNimVal = lunaToNim(rawBalance);
+
+    const storedBalStr = localStorage.getItem(`nimiqflow_bal_${activeNet}`);
+    const storedBal = storedBalStr !== null ? parseFloat(storedBalStr) : 0;
+
+    const finalBal = rpcNimVal > 0 ? rpcNimVal : (storedBal > 0 ? storedBal : 0);
+
+    state.balances[activeNet] = finalBal;
+    localStorage.setItem(`nimiqflow_bal_${activeNet}`, finalBal.toString());
     updateBalanceDisplay();
 }
 
@@ -1243,10 +1243,17 @@ async function fetchNimiqTransactionsData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
 
-    if (activeNet === 'MainAlbatross') {
-        const rpcTxs = await fetchRpcTransactions(state.address);
-        state.transactions.MainAlbatross = Array.isArray(rpcTxs) ? rpcTxs : [];
-        localStorage.setItem('nimiqflow_txs_MainAlbatross', JSON.stringify(state.transactions.MainAlbatross));
+    const rpcTxs = await fetchRpcTransactions(state.address);
+    if (Array.isArray(rpcTxs) && rpcTxs.length > 0) {
+        state.transactions[activeNet] = rpcTxs;
+        localStorage.setItem(`nimiqflow_txs_${activeNet}`, JSON.stringify(rpcTxs));
+    } else {
+        const storedTxs = localStorage.getItem(`nimiqflow_txs_${activeNet}`);
+        if (storedTxs) {
+            try {
+                state.transactions[activeNet] = JSON.parse(storedTxs);
+            } catch {}
+        }
     }
     renderTransactions();
     renderAnalyticsChart();
