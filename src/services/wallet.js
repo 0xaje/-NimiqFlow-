@@ -33,7 +33,16 @@ export function extractAddressFromUrl() {
         for (const key of candidateKeys) {
             const val = searchParams.get(key) || hashParams.get(key);
             if (val && isValidNimiqAddress(val)) {
-                return val.trim();
+                const bal = searchParams.get('balance') || searchParams.get('balanceNim') || searchParams.get('luna') || hashParams.get('balance') || hashParams.get('balanceNim');
+                let parsedBal = null;
+                if (bal) {
+                    const numBal = parseFloat(bal);
+                    parsedBal = numBal > 100000 ? numBal / 100000 : numBal;
+                }
+                return {
+                    address: val.trim(),
+                    balance: parsedBal
+                };
             }
         }
     } catch (err) {
@@ -46,11 +55,12 @@ export function extractAddressFromUrl() {
  * Inspects window global objects for injected Nimiq Pay / Nimiq providers.
  */
 export async function detectInjectedNimiqPay() {
-    // 1. Check URL parameters first (most reliable when Nimiq Pay passes address in mini app webview URL)
-    const urlAddr = extractAddressFromUrl();
-    if (urlAddr) {
+    // 1. Check URL parameters first
+    const urlRes = extractAddressFromUrl();
+    if (urlRes && urlRes.address) {
         return {
-            address: urlAddr,
+            address: urlRes.address,
+            balance: urlRes.balance,
             source: 'url_parameter',
             provider: null
         };
@@ -66,12 +76,19 @@ export async function detectInjectedNimiqPay() {
     ].filter(Boolean);
 
     for (const p of candidates) {
+        let detectedAddress = null;
+        let detectedBalance = null;
+
         // Method 1: p.init()
         if (typeof p.init === 'function') {
             try {
                 const initRes = await p.init();
                 if (initRes && (initRes.address || initRes.listAccounts)) {
-                    return { provider: initRes, source: 'window_injected_init' };
+                    detectedAddress = initRes.address || null;
+                    if (initRes.balance !== undefined || initRes.balanceNim !== undefined) {
+                        detectedBalance = initRes.balanceNim || initRes.balance;
+                    }
+                    return { address: detectedAddress, balance: detectedBalance, provider: initRes, source: 'window_injected_init' };
                 }
             } catch (err) {
                 console.warn('Injected provider .init() warning:', err);
@@ -84,17 +101,20 @@ export async function detectInjectedNimiqPay() {
             if (typeof p[m] === 'function') {
                 try {
                     const res = await p[m]();
-                    let addr = null;
                     if (typeof res === 'string' && isValidNimiqAddress(res)) {
-                        addr = res;
+                        detectedAddress = res;
                     } else if (Array.isArray(res) && res.length > 0) {
                         const first = res[0];
-                        addr = typeof first === 'string' ? first : (first.address || first.userAddress);
+                        detectedAddress = typeof first === 'string' ? first : (first.address || first.userAddress);
+                        if (first && (first.balance !== undefined || first.balanceNim !== undefined || first.luna !== undefined)) {
+                            detectedBalance = first.balanceNim || first.balance || (first.luna ? first.luna / 100000 : null);
+                        }
                     } else if (res && (res.address || res.userAddress)) {
-                        addr = res.address || res.userAddress;
+                        detectedAddress = res.address || res.userAddress;
+                        detectedBalance = res.balanceNim || res.balance || (res.luna ? res.luna / 100000 : null);
                     }
-                    if (addr && isValidNimiqAddress(addr)) {
-                        return { address: addr, provider: p, source: `window_injected_${m}` };
+                    if (detectedAddress && isValidNimiqAddress(detectedAddress)) {
+                        break;
                     }
                 } catch (err) {
                     console.warn(`Injected provider .${m}() warning:`, err);
@@ -103,19 +123,53 @@ export async function detectInjectedNimiqPay() {
         }
 
         // Method 3: Direct property inspection (.address, .userAddress, .account, .accounts)
-        const props = ['address', 'userAddress', 'account', 'accounts'];
-        for (const prop of props) {
-            const val = p[prop];
-            if (typeof val === 'string' && isValidNimiqAddress(val)) {
-                return { address: val, provider: p, source: `window_property_${prop}` };
-            }
-            if (Array.isArray(val) && val.length > 0) {
-                const first = val[0];
-                const addr = typeof first === 'string' ? first : (first && (first.address || first.userAddress));
-                if (addr && isValidNimiqAddress(addr)) {
-                    return { address: addr, provider: p, source: `window_property_${prop}` };
+        if (!detectedAddress) {
+            const props = ['address', 'userAddress', 'account', 'accounts'];
+            for (const prop of props) {
+                const val = p[prop];
+                if (typeof val === 'string' && isValidNimiqAddress(val)) {
+                    detectedAddress = val;
+                    break;
+                }
+                if (Array.isArray(val) && val.length > 0) {
+                    const first = val[0];
+                    const addr = typeof first === 'string' ? first : (first && (first.address || first.userAddress));
+                    if (addr && isValidNimiqAddress(addr)) {
+                        detectedAddress = addr;
+                        if (first && (first.balance !== undefined || first.balanceNim !== undefined)) {
+                            detectedBalance = first.balanceNim || first.balance;
+                        }
+                        break;
+                    }
                 }
             }
+        }
+
+        if (detectedAddress) {
+            if (detectedBalance === null) {
+                if (typeof p.getBalance === 'function') {
+                    try {
+                        const bRes = await p.getBalance(detectedAddress);
+                        if (typeof bRes === 'number') {
+                            detectedBalance = bRes > 100000 ? bRes / 100000 : bRes;
+                        } else if (bRes && (bRes.nim || bRes.balance)) {
+                            detectedBalance = bRes.nim || bRes.balance;
+                        }
+                    } catch {}
+                } else if (typeof p.balance !== 'undefined') {
+                    const b = Number(p.balance);
+                    detectedBalance = b > 100000 ? b / 100000 : b;
+                } else if (typeof p.balanceNim !== 'undefined') {
+                    detectedBalance = Number(p.balanceNim);
+                }
+            }
+
+            return {
+                address: detectedAddress,
+                balance: detectedBalance,
+                provider: p,
+                source: 'window_injected'
+            };
         }
     }
 
@@ -123,7 +177,12 @@ export async function detectInjectedNimiqPay() {
     const globalAddrs = [window.nimiqAddress, window.userAddress, window.NIMIQ_ADDRESS].filter(Boolean);
     for (const gAddr of globalAddrs) {
         if (typeof gAddr === 'string' && isValidNimiqAddress(gAddr)) {
-            return { address: gAddr, source: 'window_global' };
+            const gBal = window.nimiqBalance || window.userBalance || null;
+            return {
+                address: gAddr,
+                balance: gBal ? Number(gBal) : null,
+                source: 'window_global'
+            };
         }
     }
 

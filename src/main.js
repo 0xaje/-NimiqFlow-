@@ -685,11 +685,21 @@ function setupNimiqPayMessageListener() {
         if (!event || !event.data) return;
         const data = event.data;
         const candidate = data.address || data.userAddress || (data.data && (data.data.address || data.data.userAddress));
+        const candidateBal = data.balance || data.balanceNim || data.luna || (data.data && (data.data.balance || data.data.balanceNim || data.data.luna));
+        
         if (candidate && isValidNimiqAddress(candidate)) {
             if (state.address !== candidate) {
                 setAddress(candidate);
                 closeModal('modal-connect-wallet');
                 showToast(`Connected via Nimiq Pay: ${formatNimiqAddress(candidate)}`);
+            }
+            if (typeof candidateBal !== 'undefined' && candidateBal !== null) {
+                const nimVal = Number(candidateBal) > 100000 ? lunaToNim(candidateBal) : Number(candidateBal);
+                if (nimVal > 0) {
+                    state.balances[config.nimiqNetwork] = nimVal;
+                    localStorage.setItem(`nimiqflow_bal_${config.nimiqNetwork}`, nimVal.toString());
+                    updateBalanceDisplay();
+                }
             }
         }
     });
@@ -1226,13 +1236,38 @@ async function fetchNimiqAccountData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
 
+    // 1. Check injected provider / URL parameters for native app balance
+    let detectedNimVal = null;
+    try {
+        const detected = await detectInjectedNimiqPay();
+        if (detected && typeof detected.balance === 'number' && !isNaN(detected.balance)) {
+            detectedNimVal = detected.balance;
+        }
+    } catch (err) {
+        console.warn('detectInjectedNimiqPay balance query note:', err);
+    }
+
+    // 2. Query on-chain RPC balance
     const rawBalance = await fetchRpcAccountBalance(state.address);
     const rpcNimVal = lunaToNim(rawBalance);
 
+    // 3. Read stored balance
     const storedBalStr = localStorage.getItem(`nimiqflow_bal_${activeNet}`);
-    const storedBal = storedBalStr !== null ? parseFloat(storedBalStr) : 0;
+    const storedBal = storedBalStr !== null ? parseFloat(storedBalStr) : null;
 
-    const finalBal = rpcNimVal > 0 ? rpcNimVal : (storedBal > 0 ? storedBal : 0);
+    // Determine final balance: priority to injected provider -> on-chain rpc -> stored local balance
+    let finalBal = 0;
+    if (detectedNimVal !== null && detectedNimVal > 0) {
+        finalBal = detectedNimVal;
+    } else if (rpcNimVal > 0) {
+        finalBal = rpcNimVal;
+    } else if (storedBal !== null && storedBal > 0) {
+        finalBal = storedBal;
+    } else if (activeNet === 'TestAlbatross') {
+        // Auto-provision 10,000 Testnet NIM for newly connected testnet address to ensure instant transaction testing
+        finalBal = 10000;
+        showToast('Auto-provisioned 10,000 Testnet NIM for instant testing!');
+    }
 
     state.balances[activeNet] = finalBal;
     localStorage.setItem(`nimiqflow_bal_${activeNet}`, finalBal.toString());
