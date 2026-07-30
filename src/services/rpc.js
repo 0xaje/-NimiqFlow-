@@ -88,6 +88,20 @@ export async function fetchRpcAccountBalance(address) {
     const formattedAddr = formatRpcAddress(address);
     const cleanAddr = address.replace(/\s+/g, '').toUpperCase();
 
+    // Strategy 1: REST API query (fast, direct, mobile-friendly GET)
+    try {
+        const restRes = await fetch(`https://api.nimiqwatch.com/api/v1/account/${cleanAddr}`);
+        if (restRes.ok) {
+            const data = await restRes.json();
+            if (data && typeof data.balance !== 'undefined' && data.balance !== null) {
+                return Number(data.balance);
+            }
+        }
+    } catch (err) {
+        console.warn('REST balance lookup warning:', err);
+    }
+
+    // Strategy 2: JSON-RPC query
     let result = await queryRpc('getAccountByAddress', [formattedAddr]);
     if (!result || (typeof result.balance === 'undefined' && (!result.data || typeof result.data.balance === 'undefined'))) {
         result = await queryRpc('getAccountByAddress', [cleanAddr]);

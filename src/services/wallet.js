@@ -1,4 +1,5 @@
 import HubApi from '@nimiq/hub-api';
+import { init as initMiniAppSdk } from '@nimiq/mini-app-sdk';
 import { config } from './config.js';
 
 export function isValidNimiqAddress(addr) {
@@ -21,7 +22,6 @@ function getHubApiInstance() {
 
 /**
  * Parses URL query parameters & hash fragment for Nimiq wallet addresses.
- * E.g. ?address=NQ86... or ?wallet=NQ... or #address=NQ...
  */
 export function extractAddressFromUrl() {
     try {
@@ -52,10 +52,40 @@ export function extractAddressFromUrl() {
 }
 
 /**
- * Inspects window global objects for injected Nimiq Pay / Nimiq providers.
+ * Inspects window global objects for injected Nimiq Pay / Nimiq providers via official @nimiq/mini-app-sdk.
  */
 export async function detectInjectedNimiqPay() {
-    // 1. Check URL parameters first
+    // 0. Try official @nimiq/mini-app-sdk helper
+    try {
+        const sdkProvider = await initMiniAppSdk({ timeout: 1000 });
+        if (sdkProvider) {
+            let addr = null;
+            if (typeof sdkProvider.listAccounts === 'function') {
+                try {
+                    const accs = await sdkProvider.listAccounts();
+                    if (Array.isArray(accs) && accs.length > 0) {
+                        addr = typeof accs[0] === 'string' ? accs[0] : (accs[0].address || accs[0].userAddress);
+                    }
+                } catch (e) {
+                    console.warn('sdkProvider.listAccounts error:', e);
+                }
+            }
+            if (!addr && (sdkProvider.address || sdkProvider.userAddress)) {
+                addr = sdkProvider.address || sdkProvider.userAddress;
+            }
+            if (addr && isValidNimiqAddress(addr)) {
+                return {
+                    address: addr,
+                    provider: sdkProvider,
+                    source: 'sdk_init'
+                };
+            }
+        }
+    } catch (err) {
+        console.warn('@nimiq/mini-app-sdk note:', err.message);
+    }
+
+    // 1. Check URL parameters
     const urlRes = extractAddressFromUrl();
     if (urlRes && urlRes.address) {
         return {
