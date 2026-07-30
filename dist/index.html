@@ -29,7 +29,7 @@
             }
         }
     </script>
-  <script type="module" crossorigin src="/assets/index-CaZiL_A-.js"></script>
+  <script type="module" crossorigin src="/assets/index-BzyqjCy5.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-jTbU89bt.css">
 </head>
 <body class="bg-[#0d0f0f] text-[#e2e2e2] min-h-screen pb-24">
@@ -928,6 +928,21 @@
                         <span class="material-symbols-outlined text-sm">open_in_new</span> Explorer
                     </button>
                 </div>
+
+                <!-- Sync Nimiq Pay App Balance Control -->
+                <div class="flex flex-col gap-1.5 mt-1 pt-2.5 border-t border-white/10">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] text-[#d7c3ae] font-semibold">Nimiq Pay App Balance (NIM)</span>
+                        <span class="text-[10px] text-amber-300 font-mono font-bold">Sync Wallet</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input id="input-sync-wallet-balance" type="number" placeholder="e.g. 330000" class="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
+                        <button id="btn-sync-wallet-balance" class="px-3.5 py-2 bg-[#f6a623] text-[#462b00] font-extrabold rounded-xl text-xs whitespace-nowrap active:scale-95 transition-all shadow-md">
+                            Sync
+                        </button>
+                    </div>
+                </div>
+
                 <button id="btn-modal-disconnect-wallet" class="w-full mt-1 bg-red-500/20 text-red-300 border border-red-500/30 font-bold py-2.5 rounded-xl hover:bg-red-500/30 transition-all text-xs flex items-center justify-center gap-1.5 active:scale-95">
                     <span class="material-symbols-outlined text-sm">logout</span> Disconnect Wallet
                 </button>
@@ -963,10 +978,11 @@
 
                 <!-- Manual Address Form -->
                 <div class="flex flex-col gap-2">
-                    <label class="text-xs font-semibold text-white">Enter Nimiq Address</label>
+                    <label class="text-xs font-semibold text-white">Enter Nimiq Address & Balance</label>
                     <input id="input-manual-connect-address" type="text" placeholder="NQ86 6B83 U28U 1L6D G20S RFTX N622 174P J7BA" class="w-full bg-black/50 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
-                    <button id="btn-submit-manual-connect" class="w-full bg-white/10 text-white font-bold py-3 rounded-2xl hover:bg-white/20 transition-all text-xs flex items-center justify-center gap-2 active:scale-95">
-                        <span>Submit Address</span>
+                    <input id="input-manual-connect-balance" type="number" placeholder="Optional Nimiq Pay App Balance (e.g. 330000)" class="w-full bg-black/50 border border-white/20 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:border-[#ffc982] focus:outline-none"/>
+                    <button id="btn-submit-manual-connect" class="w-full bg-white/10 text-white font-bold py-3 rounded-2xl hover:bg-white/20 transition-all text-xs flex items-center justify-center gap-2 active:scale-95 mt-1">
+                        <span>Submit Address & Connect</span>
                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
                 </div>
