@@ -1205,6 +1205,7 @@ function setAddress(newAddr) {
     if (!clean) return;
     state.address = formatNimiqAddress(clean);
     localStorage.setItem('nimiqflow_address', state.address);
+    console.log(`[NimiqFlow] Connected account set to: ${state.address} on network ${config.nimiqNetwork}`);
     updateBalanceDisplay();
     refreshAllData();
 }
@@ -1229,6 +1230,7 @@ function disconnectWallet() {
 // ==========================================
 async function fetchExchangeRateData() {
     state.usdRate = await fetchNimiqUsdPrice();
+    console.log(`[NimiqFlow] Fetched USD exchange rate: $${state.usdRate}`);
     updateRateDisplay();
 }
 
@@ -1236,20 +1238,24 @@ async function fetchNimiqAccountData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
 
+    console.log(`[NimiqFlow] fetchNimiqAccountData starting for address="${state.address}", activeNet="${activeNet}", rpcUrl="${config.rpcUrl}"`);
+
     // 1. Check injected provider / URL parameters for native app balance
     let detectedNimVal = null;
     try {
         const detected = await detectInjectedNimiqPay();
         if (detected && typeof detected.balance === 'number' && !isNaN(detected.balance)) {
             detectedNimVal = detected.balance;
+            console.log(`[NimiqFlow] Injected provider reported balance: ${detectedNimVal} NIM`);
         }
     } catch (err) {
-        console.warn('detectInjectedNimiqPay balance query note:', err);
+        console.warn('[NimiqFlow] detectInjectedNimiqPay balance query note:', err);
     }
 
     // 2. Query on-chain RPC balance
     const rawBalance = await fetchRpcAccountBalance(state.address);
     const rpcNimVal = lunaToNim(rawBalance);
+    console.log(`[NimiqFlow] RPC returned raw balance: ${rawBalance} Lunas (${rpcNimVal} NIM)`);
 
     // 3. Read stored balance
     const storedBalStr = localStorage.getItem(`nimiqflow_bal_${activeNet}`);
@@ -1265,6 +1271,7 @@ async function fetchNimiqAccountData() {
         finalBal = storedBal;
     }
 
+    console.log(`[NimiqFlow] Final calculated NIM balance for ${activeNet}: ${finalBal} NIM`);
     state.balances[activeNet] = finalBal;
     localStorage.setItem(`nimiqflow_bal_${activeNet}`, finalBal.toString());
     updateBalanceDisplay();
@@ -1274,8 +1281,10 @@ async function fetchNimiqTransactionsData() {
     if (!state.address) return;
     const activeNet = config.nimiqNetwork;
 
+    console.log(`[NimiqFlow] fetchNimiqTransactionsData querying txs for address="${state.address}", activeNet="${activeNet}"`);
     const rpcTxs = await fetchRpcTransactions(state.address);
     if (Array.isArray(rpcTxs) && rpcTxs.length > 0) {
+        console.log(`[NimiqFlow] Found ${rpcTxs.length} active RPC transactions for ${activeNet}`);
         state.transactions[activeNet] = rpcTxs;
         localStorage.setItem(`nimiqflow_txs_${activeNet}`, JSON.stringify(rpcTxs));
     } else {
@@ -1292,6 +1301,7 @@ async function fetchNimiqTransactionsData() {
 
 async function refreshAllData() {
     state.isLoading = true;
+    console.log(`[NimiqFlow] refreshAllData triggered for network=${config.nimiqNetwork}, address=${state.address}`);
     await Promise.all([
         fetchExchangeRateData(),
         fetchNimiqAccountData(),

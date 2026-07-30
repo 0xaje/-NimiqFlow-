@@ -11,11 +11,10 @@ const TESTNET_RPC_ENDPOINTS = [
 
 export async function queryRpc(method, params = []) {
     const isTestnet = config.nimiqNetwork === 'TestAlbatross';
-    const primaryUrl = isTestnet ? 'https://rpc.testnet.nimiqwatch.com' : 'https://rpc.nimiqwatch.com';
-    const fallbackList = isTestnet ? TESTNET_RPC_ENDPOINTS : MAINNET_RPC_ENDPOINTS;
+    const endpoints = isTestnet ? TESTNET_RPC_ENDPOINTS : MAINNET_RPC_ENDPOINTS;
     
-    const endpoints = Array.from(new Set([config.rpcUrl, primaryUrl, ...fallbackList]));
-    
+    console.log(`[NimiqFlow] RPC Request: method=${method}, network=${config.nimiqNetwork}, endpoints=${JSON.stringify(endpoints)}, params=${JSON.stringify(params)}`);
+
     for (const endpoint of endpoints) {
         try {
             const payload = {
@@ -33,12 +32,18 @@ export async function queryRpc(method, params = []) {
 
             if (res.ok) {
                 const json = await res.json();
-                if (json && typeof json.result !== 'undefined') {
+                console.log(`[NimiqFlow] RPC Response from ${endpoint} for ${method}:`, json);
+                if (json && typeof json.result !== 'undefined' && json.result !== null) {
                     return json.result;
                 }
+                if (json && json.error) {
+                    console.warn(`[NimiqFlow] RPC Error from ${endpoint}:`, json.error);
+                }
+            } else {
+                console.warn(`[NimiqFlow] RPC HTTP Error ${res.status} from ${endpoint}`);
             }
         } catch (err) {
-            console.warn(`RPC endpoint ${endpoint} failed for ${method}:`, err);
+            console.warn(`[NimiqFlow] RPC endpoint ${endpoint} failed for ${method}:`, err);
         }
     }
     return null;
@@ -47,6 +52,8 @@ export async function queryRpc(method, params = []) {
 export async function claimFaucetTokens(address, amount = 10000) {
     if (!address) throw new Error("Wallet address is required for faucet claim");
     const cleanAddress = address.replace(/\s+/g, '');
+
+    console.log(`[NimiqFlow] Claiming faucet tokens for address: ${cleanAddress}, amount: ${amount}`);
 
     const params = new URLSearchParams();
     params.append('address', cleanAddress);
@@ -64,15 +71,17 @@ export async function claimFaucetTokens(address, amount = 10000) {
         if (res.ok) {
             try {
                 const data = await res.json();
+                console.log(`[NimiqFlow] Faucet claim success response:`, data);
                 return { success: true, ...data };
             } catch {
-                return { success: true };
+                return { success: true, message: 'Faucet request dispatched successfully.' };
             }
         }
         const errText = await res.text();
+        console.warn(`[NimiqFlow] Faucet HTTP ${res.status}: ${errText}`);
         return { success: false, message: errText || `Faucet HTTP Error ${res.status}` };
     } catch (err) {
-        console.warn('Faucet tapit request warning:', err);
+        console.warn('[NimiqFlow] Faucet tapit request error:', err);
         return { success: false, message: err.message || 'Faucet network request failed.' };
     }
 }
@@ -85,9 +94,14 @@ export function formatRpcAddress(addr) {
 }
 
 export async function fetchRpcAccountBalance(address) {
-    if (!address) return 0;
+    if (!address) {
+        console.log(`[NimiqFlow] fetchRpcAccountBalance called with empty address`);
+        return 0;
+    }
     const formattedAddr = formatRpcAddress(address);
     const cleanAddr = address.replace(/\s+/g, '').toUpperCase();
+
+    console.log(`[NimiqFlow] fetchRpcAccountBalance querying address: formatted="${formattedAddr}", clean="${cleanAddr}" on network="${config.nimiqNetwork}" (RPC URL: "${config.rpcUrl}")`);
 
     // Query active JSON-RPC node (Testnet or Mainnet)
     let result = await queryRpc('getAccountByAddress', [formattedAddr]);
@@ -106,33 +120,45 @@ export async function fetchRpcAccountBalance(address) {
         }
     }
 
+    console.log(`[NimiqFlow] fetchRpcAccountBalance result for ${cleanAddr}: ${rpcBalance} Lunas (${rpcBalance / 100000} NIM)`);
     return rpcBalance;
 }
 
 export async function fetchRpcTransactions(address, limit = 25) {
     if (!address) return [];
     const formattedAddr = formatRpcAddress(address);
+    console.log(`[NimiqFlow] fetchRpcTransactions querying address: ${formattedAddr} on ${config.nimiqNetwork}`);
     const result = await queryRpc('getTransactionsByAddress', [formattedAddr, limit, null]);
     if (result && Array.isArray(result.data)) {
+        console.log(`[NimiqFlow] fetchRpcTransactions returned ${result.data.length} txs`);
         return result.data;
     }
     if (result && Array.isArray(result)) {
+        console.log(`[NimiqFlow] fetchRpcTransactions returned ${result.length} txs`);
         return result;
     }
     return [];
 }
 
 export async function fetchRpcBlockNumber() {
+    console.log(`[NimiqFlow] Fetching RPC block number for network ${config.nimiqNetwork}...`);
     const result = await queryRpc('getBlockNumber', []);
-    if (typeof result === 'number') return result;
-    if (result && typeof result.data === 'number') return result.data;
-    if (result && typeof result.blockNumber === 'number') return result.blockNumber;
-    return 0;
+    let blockNum = 0;
+    if (typeof result === 'number') blockNum = result;
+    else if (result && typeof result.data === 'number') blockNum = result.data;
+    else if (result && typeof result.blockNumber === 'number') blockNum = result.blockNumber;
+    
+    console.log(`[NimiqFlow] Current RPC Block Number for ${config.nimiqNetwork}: ${blockNum}`);
+    return blockNum;
 }
 
 export async function fetchRpcConsensusStatus() {
+    console.log(`[NimiqFlow] Fetching RPC consensus status for network ${config.nimiqNetwork}...`);
     const result = await queryRpc('isConsensusEstablished', []);
-    if (typeof result === 'boolean') return result ? 'Established' : 'Syncing';
-    return 'Offline';
+    let status = 'Offline';
+    if (typeof result === 'boolean') status = result ? 'Established' : 'Syncing';
+    console.log(`[NimiqFlow] Current RPC Consensus Status for ${config.nimiqNetwork}: ${status}`);
+    return status;
 }
+
 

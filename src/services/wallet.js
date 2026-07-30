@@ -1,6 +1,6 @@
 import HubApi from '@nimiq/hub-api';
 import { init as initMiniAppSdk } from '@nimiq/mini-app-sdk';
-import { config } from './config.js';
+import { config, setNetworkEnvironment } from './config.js';
 
 export function isValidNimiqAddress(addr) {
     if (!addr || typeof addr !== 'string') return false;
@@ -59,15 +59,28 @@ export async function detectInjectedNimiqPay() {
     try {
         const sdkProvider = await initMiniAppSdk({ timeout: 3000 });
         if (sdkProvider) {
+            console.log('[NimiqFlow] @nimiq/mini-app-sdk initialized successfully:', sdkProvider);
+
+            if (typeof sdkProvider.getNetwork === 'function') {
+                try {
+                    const hostNet = sdkProvider.getNetwork();
+                    console.log(`[NimiqFlow] Host SDK getNetwork() returned: ${hostNet}`);
+                    if (hostNet) setNetworkEnvironment(hostNet);
+                } catch (e) {
+                    console.warn('[NimiqFlow] sdkProvider.getNetwork warning:', e);
+                }
+            }
+
             let addr = null;
             if (typeof sdkProvider.listAccounts === 'function') {
                 try {
                     const accs = await sdkProvider.listAccounts();
+                    console.log('[NimiqFlow] sdkProvider.listAccounts() returned:', accs);
                     if (Array.isArray(accs) && accs.length > 0) {
                         addr = typeof accs[0] === 'string' ? accs[0] : (accs[0].address || accs[0].userAddress);
                     }
                 } catch (e) {
-                    console.warn('sdkProvider.listAccounts error:', e);
+                    console.warn('[NimiqFlow] sdkProvider.listAccounts error:', e);
                 }
             }
             if (!addr && (sdkProvider.address || sdkProvider.userAddress)) {
@@ -82,7 +95,7 @@ export async function detectInjectedNimiqPay() {
             }
         }
     } catch (err) {
-        console.warn('@nimiq/mini-app-sdk note:', err.message);
+        console.warn('[NimiqFlow] @nimiq/mini-app-sdk note:', err.message);
     }
 
     // 1. Check URL parameters
