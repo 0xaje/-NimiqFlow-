@@ -24,7 +24,7 @@ export function setNetworkEnvironment(networkName) {
     localStorage.setItem('nimiqflow_dev_network', networkName);
 
     if (networkName === 'TestAlbatross') {
-        config.rpcUrl = 'https://rpc.pos.nimiq-testnet.com';
+        config.rpcUrl = 'https://rpc.nimiqwatch.com';
         config.explorerUrl = 'https://albatross.nimiqscan.com';
     } else {
         config.rpcUrl = 'https://rpc.nimiqwatch.com';
