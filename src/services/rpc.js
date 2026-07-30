@@ -69,11 +69,12 @@ export async function claimFaucetTokens(address, amount = 10000) {
                 return { success: true };
             }
         }
+        const errText = await res.text();
+        return { success: false, message: errText || `Faucet HTTP Error ${res.status}` };
     } catch (err) {
         console.warn('Faucet tapit request warning:', err);
+        return { success: false, message: err.message || 'Faucet network request failed.' };
     }
-
-    return { success: false, message: 'Faucet request dispatched. On-chain confirmation pending.' };
 }
 
 export function formatRpcAddress(addr) {
@@ -126,11 +127,12 @@ export async function fetchRpcBlockNumber() {
     if (typeof result === 'number') return result;
     if (result && typeof result.data === 'number') return result.data;
     if (result && typeof result.blockNumber === 'number') return result.blockNumber;
-    return 6421120;
+    return 0;
 }
 
 export async function fetchRpcConsensusStatus() {
     const result = await queryRpc('isConsensusEstablished', []);
     if (typeof result === 'boolean') return result ? 'Established' : 'Syncing';
-    return 'Established';
+    return 'Offline';
 }
+

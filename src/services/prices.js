@@ -28,5 +28,6 @@ export async function fetchNimiqUsdPrice() {
         console.warn('Prices service CoinGecko error:', err);
     }
     
-    return cachedPrice > 0 ? cachedPrice : 0.00047;
+    return cachedPrice > 0 ? cachedPrice : 0;
 }
+

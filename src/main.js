@@ -121,7 +121,7 @@ let state = {
     address: localStorage.getItem('nimiqflow_address') || '',
     deviceId: localStorage.getItem('nimiqflow_device_id') || '',
     currentLang: localStorage.getItem('nimiqflow_lang') || getInitialLanguage(),
-    usdRate: 0.00047,
+    usdRate: 0,
     historyFilter: 'all',
     isLoading: false,
     activeTab: 'home',
@@ -1161,13 +1161,13 @@ function parseInvoicePrompt(promptText) {
         if (!trimmed) return;
 
         const numMatch = trimmed.match(/(?:(\$\s*\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:NIM|USD|\$)?)/i);
-        let amountUsd = 50.00;
+        let amountUsd = 0;
         let desc = trimmed.replace(/(?:bill|invoice|for|to)\s+/gi, '').trim();
 
         if (numMatch) {
-            const rawNum = parseFloat(numMatch[1]?.replace('$', '') || numMatch[2] || '50');
+            const rawNum = parseFloat(numMatch[1]?.replace('$', '') || numMatch[2] || '0');
             if (trimmed.toUpperCase().includes('NIM')) {
-                amountUsd = state.usdRate > 0 ? rawNum * state.usdRate : rawNum * 0.00047;
+                amountUsd = state.usdRate > 0 ? rawNum * state.usdRate : 0;
             } else {
                 amountUsd = rawNum;
             }
