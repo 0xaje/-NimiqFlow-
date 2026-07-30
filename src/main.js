@@ -21,6 +21,7 @@ const TRANSLATIONS = {
         device_verified: 'Trusted Device',
         mainnet_live: 'Nimiq Testnet Live',
         connect: 'Connect with Nimiq Pay',
+        btn_connect: 'Connect',
         total_balance: 'Total Balance (USD)',
         not_connected: 'Not Connected',
         nim_balance: 'Nimiq Crypto Balance',
@@ -52,6 +53,7 @@ const TRANSLATIONS = {
         device_verified: 'Vertrauenswürdiges Gerät',
         mainnet_live: 'Nimiq Testnet Live',
         connect: 'Mit Nimiq Pay verbinden',
+        btn_connect: 'Verbinden',
         total_balance: 'Gesamtguthaben (USD)',
         not_connected: 'Nicht verbunden',
         nim_balance: 'Nimiq Krypto-Guthaben',
@@ -83,6 +85,7 @@ const TRANSLATIONS = {
         device_verified: 'Dispositivo de Confianza',
         mainnet_live: 'Nimiq Testnet en Vivo',
         connect: 'Conectar con Nimiq Pay',
+        btn_connect: 'Conectar',
         total_balance: 'Saldo Total (USD)',
         not_connected: 'No conectado',
         nim_balance: 'Saldo Nimiq Cripto',
@@ -448,7 +451,7 @@ function setupDeveloperMode() {
                 ? 'text-[10px] text-amber-300 font-semibold uppercase bg-amber-500/20 border border-amber-400/40 px-2 py-0.5 rounded-full'
                 : 'text-[10px] text-sky-300 font-semibold uppercase bg-sky-500/20 border border-sky-400/40 px-2 py-0.5 rounded-full';
         }
-        if (headerNetworkName) headerNetworkName.textContent = netName;
+        if (headerNetworkName) headerNetworkName.textContent = isMain ? 'Mainnet' : 'Testnet';
         if (heroNetworkText) heroNetworkText.textContent = netName;
 
         if (headerNetworkBadge) {
@@ -542,7 +545,7 @@ async function updateDeveloperDiagnosticsUI() {
     const heroNetworkText = document.getElementById('hero-network-text');
 
     if (chainEl) chainEl.textContent = config.nimiqNetwork;
-    if (headerNetworkName) headerNetworkName.textContent = config.nimiqNetwork;
+    if (headerNetworkName) headerNetworkName.textContent = config.nimiqNetwork === 'MainAlbatross' ? 'Mainnet' : 'Testnet';
     if (heroNetworkText) heroNetworkText.textContent = config.nimiqNetwork;
 
     try {
@@ -1228,7 +1231,7 @@ function updateBalanceDisplay() {
             profAddr.textContent = TRANSLATIONS[state.currentLang]?.not_connected || 'Not Connected';
         }
         if (btnConnectLabel) {
-            btnConnectLabel.textContent = TRANSLATIONS[state.currentLang]?.connect || 'Connect';
+            btnConnectLabel.textContent = TRANSLATIONS[state.currentLang]?.btn_connect || 'Connect';
         }
         if (btnQuickConnect) {
             btnQuickConnect.classList.remove('bg-emerald-500/20', 'text-emerald-300', 'border', 'border-emerald-400/30');
